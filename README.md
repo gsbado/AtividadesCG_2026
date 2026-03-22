@@ -4,7 +4,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 
 ## 📌 Entregas de trabalho
 
-1. [Hello3D](src/Desafios/M1/Hello3D.cpp) (implementação principal de renderização básica)
+1. [Hello3D](src/Desafios/M1/Hello3D.cpp): implementação principal de renderização básica
 2. 
 
 ## 📂 Estrutura do Repositório
