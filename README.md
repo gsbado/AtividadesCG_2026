@@ -1,37 +1,63 @@
-# Computação Gráfica - Híbrido
+# Computação Gráfica - Híbrido - 2026/1
 
-Repositório de exemplos de códigos em C++ utilizando OpenGL moderna (3.3+) criado para a Atividade Acadêmica Computação Gráfica do curso de graduação em Ciência da Computação - modalidade híbrida - da Unisinos. Ele é estruturado para facilitar a organização dos arquivos e a compilação dos projetos utilizando CMake.
+Este repositório foi criado para a entrega das atividades da disciplina de **Computação Gráfica** do curso de Ciência da Computação (Unisinos - modalidade híbrida), com código em C++ utilizando OpenGL moderna (3.3+). Ele é estruturado para facilitar a organização dos arquivos e a compilação dos projetos utilizando CMake.
+
+## 📌 Entregas de trabalho
+
+1. [Hello3D](src/Desafios/M1/Hello3D.cpp) (implementação principal de renderização básica)
+2. 
 
 ## 📂 Estrutura do Repositório
 
 ```plaintext
-📂 CGCCHibrido/
-├── 📂 include/               # Cabeçalhos e bibliotecas de terceiros
-│   ├── 📂 glad/              # Cabeçalhos da GLAD (OpenGL Loader)
-│   │   ├── glad.h
-│   │   ├── 📂 KHR/           # Diretório com cabeçalhos da Khronos (GLAD)
-│   │       ├── khrplatform.h
-├── 📂 common/                # Código reutilizável entre os projetos
-│   ├── glad.c                # Implementação da GLAD
-├── 📂 src/                   # Código-fonte dos exemplos e exercícios
-│   ├── Hello3D.cpp           # Exemplo básico de renderização com OpenGL
-│   ├── ...                   # Outros exemplos e exercícios futuros
-├── 📂 build/                 # Diretório gerado pelo CMake (não incluído no repositório)
-├── 📂 assets/                # diretório com modelos 3D, texturas, fontes etc
-├── 📄 CMakeLists.txt         # Configuração do CMake para compilar os projetos
-├── 📄 README.md              # Este arquivo, com a documentação do repositório
-├── 📄 GettingStarted.md      # Tutorial detalhado sobre como compilar usando o CMake
+📂 ATIVIDADESCG_2026/
+├── 📂 assets/                # Modelos 3D, texturas, fontes, etc.
+├── 📂 build/                 # Arquivos gerados pelo CMake (não versionar)
+├── 📂 Code snippets/         # Trechos de código auxiliares
+├── 📂 Common/                # Código reutilizável (ex: GLAD)
+├── 📂 include/               # Bibliotecas e headers
+├── 📂 src/
+│   ├── 📂 Desafios/
+│   │   └── 📂 M1/
+│   │       ├── Hello3D.cpp
+│   │       └── RESULT.md
+│   ├── SpherePhong.cpp
+│   └── TriangleTex.cpp
+├── 📄 CMakeLists.txt         # Configuração de build
+├── 📄 GettingStarted.md      # Guia detalhado de configuração
+├── 📄 README.md              # Documentação principal
 ```
 
+---
+
+## ⚙️ Configuração do projeto
 Siga as instruções detalhadas em [GettingStarted.md](GettingStarted.md) para configurar e compilar o projeto.
 
-## ⚠️ **IMPORTANTE: Baixar a GLAD Manualmente**
-Para que o projeto funcione corretamente, é necessário **baixar a GLAD manualmente** utilizando o **GLAD Generator**.
+### 1. Pré-requisitos
 
-### 🔗 **Acesse o web service do GLAD**:
+Antes de iniciar, certifique-se de ter instalado:
+
+- CMake
+- Compilador C++ (GCC, Clang ou MSVC)
+- Git (opcional)
+
+### 2. Dependências
+
+As seguintes bibliotecas são gerenciadas automaticamente pelo projeto via CMake:
+- `glfw`
+- `glm`
+- `stb_image`
+
+✅ Não é necessário instalá-las manualmente.
+
+### 3. ⚠️ Configuração obrigatória: GLAD
+
+O **GLAD não é incluído automaticamente** e precisa ser configurado manualmente.
+
+#### 🔗 Acesse o gerador:
 👉 [GLAD Generator](https://glad.dav1d.de/)
 
-### ⚙️ **Configuração necessária:**
+#### ⚙️ Configure da seguinte forma:
 - **API:** OpenGL  
 - **Version:** 3.3+ (ou superior compatível com sua máquina)  
 - **Profile:** Core  
@@ -43,5 +69,8 @@ Após a geração, extraia os arquivos baixados e coloque-os nos diretórios cor
 - Copie **`khrplatform.h`** para `include/glad/KHR/`
 - Copie **`glad.c`** para `common/`
 
-🚨 **Sem esses arquivos, a compilação falhará!** É necessário colocar esses arquivos nos diretórios corretos, conforme a orientação acima.
+## 🚨 Observações importantes
 
+- Sem esses arquivos de configuração, o projeto não irá compilar.
+- Se você mover arquivos, atualize `CMakeLists.txt` para apontar o caminho correto.
+- `build/` é gerado pelo CMake e normalmente não entra no Git.
