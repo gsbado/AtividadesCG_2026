@@ -33,6 +33,14 @@ struct Cube {
 };
 
 // ---- VARIÁVEIS GLOBAIS ----
+Cube cube = {
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    1.0f,
+
+    false, false, false,
+
+    0.0f, 0.0f, 0.0f
+};
 const GLuint WIDTH = 1000, HEIGHT = 1000;
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
@@ -193,27 +201,45 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_X && action == GLFW_PRESS)
 	{
-		rotateX = true;
-		rotateY = false;
-		rotateZ = false;
+		cube.rotateX = true;
+		cube.rotateY = false;
+		cube.rotateZ = false;
 	}
 
 	if (key == GLFW_KEY_Y && action == GLFW_PRESS)
 	{
-		rotateX = false;
-		rotateY = true;
-		rotateZ = false;
+		cube.rotateX = false;
+		cube.rotateY = true;
+		cube.rotateZ = false;
 	}
 
 	if (key == GLFW_KEY_Z && action == GLFW_PRESS)
 	{
-		rotateX = false;
-		rotateY = false;
-		rotateZ = true;
+		cube.rotateX = false;
+		cube.rotateY = false;
+		cube.rotateZ = true;
 	}
 
+	if (key == GLFW_KEY_A)
+    cube.position.x -= 0.1f;
+	if (key == GLFW_KEY_D)
+			cube.position.x += 0.1f;
 
+	if (key == GLFW_KEY_W)
+			cube.position.z -= 0.1f;
+	if (key == GLFW_KEY_S)
+			cube.position.z += 0.1f;
 
+	if (key == GLFW_KEY_I)
+			cube.position.y += 0.1f;
+	if (key == GLFW_KEY_J)
+			cube.position.y -= 0.1f;
+
+	if (key == GLFW_KEY_LEFT_BRACKET)
+    cube.scale -= 0.1f;
+
+	if (key == GLFW_KEY_RIGHT_BRACKET)
+		cube.scale += 0.1f;
 }
 
 //Esta função está basntante hardcoded - objetivo é compilar e "buildar" um programa de
