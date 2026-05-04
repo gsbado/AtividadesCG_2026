@@ -18,10 +18,21 @@
 
 using namespace std;
 
-// ---- VARIÁVEIS GLOBAIS ----
-bool rotateX = false, rotateY = false, rotateZ = false;
+// ---- STRUCTS ----
+struct Cube {
+    glm::vec3 position;
+    float scale;
 
-// Dimensões da janela (pode ser alterado em tempo de execução)
+    bool rotateX;
+    bool rotateY;
+    bool rotateZ;
+
+    float angleX;
+    float angleY;
+    float angleZ;
+};
+
+// ---- VARIÁVEIS GLOBAIS ----
 const GLuint WIDTH = 1000, HEIGHT = 1000;
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
