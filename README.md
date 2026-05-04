@@ -12,15 +12,18 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 ```plaintext
 📂 ATIVIDADESCG_2026/
 ├── 📂 assets/                # Modelos 3D, texturas, fontes, etc.
-├── 📂 build/                 # Arquivos gerados pelo CMake (não versionar)
+├── 📂 build/                 # Arquivos gerados pelo CMake
 ├── 📂 Code snippets/         # Trechos de código auxiliares
-├── 📂 Common/                # Código reutilizável (ex: GLAD)
+├── 📂 Common/                # Código reutilizável
 ├── 📂 include/               # Bibliotecas e headers
 ├── 📂 src/
 │   ├── 📂 Desafios/
-│   │   └── 📂 M1/
-│   │       ├── Hello3D.cpp
-│   │       └── RESULT.md
+│   │   ├── 📂 M1/
+│   │   |   ├── Hello3D.cpp
+│   │   |   └── RESULT.md
+│   │   └── 📂 M2/
+│   │       ├── HelloSquares3D.cpp
+│   │       └── README.md
 │   ├── SpherePhong.cpp
 │   └── TriangleTex.cpp
 ├── 📄 CMakeLists.txt         # Configuração de build
