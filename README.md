@@ -28,7 +28,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 │   └── TriangleTex.cpp
 ├── 📄 CMakeLists.txt         # Configuração de build
 ├── 📄 GettingStarted.md      # Guia detalhado de configuração
-├── 📄 README.md              # Documentação principal
+└── 📄 README.md              # Documentação principal
 ```
 
 ---
