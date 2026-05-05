@@ -54,6 +54,8 @@ void prepareFrame();
 void updateCubeRotation(float frameDelta);
 glm::mat4 buildCubeModelMatrix();
 
+void showControlsGuide();
+
 void renderCube(GLuint cubeVAO, GLint modelMatrixLocation);
 
 int setupShader();
@@ -101,6 +103,8 @@ int main()
 	const GLubyte* version = glGetString(GL_VERSION);
 	cout << "Renderer: " << renderer << endl;
 	cout << "OpenGL version supported " << version << endl;
+
+	showControlsGuide();
 
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
@@ -268,7 +272,7 @@ void handleScaleKeys(int key)
 {
 	if (key == GLFW_KEY_LEFT_BRACKET && cube.scale > 0.2f)
 		cube.scale -= 0.1f;
-		
+
 	if (key == GLFW_KEY_RIGHT_BRACKET && cube.scale < 1.2f)
 		cube.scale += 0.1f;
 }
@@ -314,6 +318,23 @@ int setupShader()
 	glDeleteShader(fragmentShader);
 
 	return shaderProgram;
+}
+
+void showControlsGuide()
+{
+	cout << endl;
+	cout << "==========================================" << endl;
+	cout << " Bem-vindo ao Squares 3D! " << endl;
+	cout << " Controle seu cubo utilizando as seguintes teclas:" << endl;
+	cout << "------------------------------------------" << endl;
+	cout << " Movimento X : A | D  ou  <- | ->" << endl;
+	cout << " Movimento Y : I | J  ou  /\\ | \\/" << endl;
+	cout << " Movimento Z : W | S" << endl;
+	cout << " Rotacao     : X | Y | Z" << endl;
+	cout << " Escala      : [ | ]" << endl;
+	cout << " Sair        : ESC" << endl;
+	cout << "==========================================" << endl;
+	cout << endl;
 }
 
 int setupGeometry()
