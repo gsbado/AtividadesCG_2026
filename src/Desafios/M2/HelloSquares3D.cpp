@@ -101,12 +101,21 @@ int main()
 	glUseProgram(shaderID);
 
 	glm::mat4 model = glm::mat4(1.0f);
-	GLint modelLoc = glGetUniformLocation(shaderID, "model");
+	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	const float ROTATION_FACTOR = 1.0f;
+	float previousFrameTime = (float)glfwGetTime();
 
 	while (!glfwWindowShouldClose(window))
 	{
+		float frameTime = (float)glfwGetTime();
+		float frameDelta = frameTime - previousFrameTime;
+		previousFrameTime = frameTime;
+
 		glfwPollEvents();
 
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -128,11 +137,11 @@ int main()
 		);
 
 		if (cube.rotateX)
-				cube.angleX += 0.01f;
+			cube.angleX += ROTATION_FACTOR * frameDelta;
 		if (cube.rotateY)
-				cube.angleY += 0.01f;
+			cube.angleY += ROTATION_FACTOR * frameDelta;
 		if (cube.rotateZ)
-				cube.angleZ += 0.01f;
+			cube.angleZ += ROTATION_FACTOR * frameDelta;
 
 		model = glm::rotate(
 				model,
@@ -153,7 +162,7 @@ int main()
 		);
 
 		glUniformMatrix4fv(
-				modelLoc,
+				modelMatrixLocation,
 				1,
 				GL_FALSE,
 				glm::value_ptr(model)
@@ -161,8 +170,6 @@ int main()
 
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		glDrawArrays(GL_POINTS, 0, 36);
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
@@ -178,48 +185,35 @@ int main()
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	if (action != GLFW_PRESS && action != GLFW_REPEAT)
+		return;
+
+	if (key == GLFW_KEY_ESCAPE)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
-	if (key == GLFW_KEY_X && action == GLFW_PRESS)
-	{
-		cube.rotateX = true;
-		cube.rotateY = false;
-		cube.rotateZ = false;
-	}
-
-	if (key == GLFW_KEY_Y && action == GLFW_PRESS)
-	{
-		cube.rotateX = false;
-		cube.rotateY = true;
-		cube.rotateZ = false;
-	}
-
-	if (key == GLFW_KEY_Z && action == GLFW_PRESS)
-	{
-		cube.rotateX = false;
-		cube.rotateY = false;
-		cube.rotateZ = true;
-	}
+	if (key == GLFW_KEY_X)
+		cube.rotateX = !cube.rotateX;
+	if (key == GLFW_KEY_Y)
+		cube.rotateY = !cube.rotateY;
+	if (key == GLFW_KEY_Z)
+		cube.rotateZ = !cube.rotateZ;
 
 	if (key == GLFW_KEY_A)
-    cube.position.x -= 0.1f;
+		cube.position.x -= 0.1f;
 	if (key == GLFW_KEY_D)
-			cube.position.x += 0.1f;
+		cube.position.x += 0.1f;
+	if (key == GLFW_KEY_I)
+		cube.position.y += 0.1f;
+	if (key == GLFW_KEY_J)
+		cube.position.y -= 0.1f;
 
 	if (key == GLFW_KEY_W)
-			cube.position.z -= 0.1f;
+		cube.position.z -= 0.1f;
 	if (key == GLFW_KEY_S)
-			cube.position.z += 0.1f;
-
-	if (key == GLFW_KEY_I)
-			cube.position.y += 0.1f;
-	if (key == GLFW_KEY_J)
-			cube.position.y -= 0.1f;
+		cube.position.z += 0.1f;
 
 	if (key == GLFW_KEY_LEFT_BRACKET && cube.scale > 0.2f)
-    cube.scale -= 0.1f;
-
+		cube.scale -= 0.1f;
 	if (key == GLFW_KEY_RIGHT_BRACKET)
 		cube.scale += 0.1f;
 }
@@ -269,56 +263,60 @@ int setupShader()
 
 int setupGeometry()
 {
+	const float RED[]     = { 1.0f, 0.2f, 0.2f };
+	const float GREEN[]   = { 0.2f, 1.0f, 0.2f };
+	const float BLUE[]    = { 0.2f, 0.4f, 1.0f };
+	const float YELLOW[]  = { 1.0f, 1.0f, 0.1f };
+	const float CYAN[]    = { 0.1f, 1.0f, 1.0f };
+	const float MAGENTA[] = { 1.0f, 0.2f, 1.0f };
+
+	#define V(x, y, z, col) x, y, z, col[0], col[1], col[2]
+
 	GLfloat vertices[] = {
-		//x    y    z   r g b
-		-0.5,-0.5, 0.5, 1,0,0,
-    0.5,-0.5, 0.5, 1,0,0,
-    0.5, 0.5, 0.5, 1,0,0,
+		V(-0.5f, -0.5f,  0.5f, RED),
+		V( 0.5f, -0.5f,  0.5f, RED),
+		V( 0.5f,  0.5f,  0.5f, RED),
+		V( 0.5f,  0.5f,  0.5f, RED),
+		V(-0.5f,  0.5f,  0.5f, RED),
+		V(-0.5f, -0.5f,  0.5f, RED),
 
-    -0.5,-0.5, 0.5, 1,0,0,
-    0.5, 0.5, 0.5, 1,0,0,
-    -0.5, 0.5, 0.5, 1,0,0,
+		V( 0.5f, -0.5f, -0.5f, GREEN),
+		V(-0.5f, -0.5f, -0.5f, GREEN),
+		V(-0.5f,  0.5f, -0.5f, GREEN),
+		V(-0.5f,  0.5f, -0.5f, GREEN),
+		V( 0.5f,  0.5f, -0.5f, GREEN),
+		V( 0.5f, -0.5f, -0.5f, GREEN),
 
-    -0.5,-0.5,-0.5, 0,1,0,
-    0.5, 0.5,-0.5, 0,1,0,
-    0.5,-0.5,-0.5, 0,1,0,
+		V(-0.5f, -0.5f, -0.5f, BLUE),
+		V(-0.5f, -0.5f,  0.5f, BLUE),
+		V(-0.5f,  0.5f,  0.5f, BLUE),
+		V(-0.5f,  0.5f,  0.5f, BLUE),
+		V(-0.5f,  0.5f, -0.5f, BLUE),
+		V(-0.5f, -0.5f, -0.5f, BLUE),
 
-    -0.5,-0.5,-0.5, 0,1,0,
-    -0.5, 0.5,-0.5, 0,1,0,
-    0.5, 0.5,-0.5, 0,1,0,
+		V( 0.5f, -0.5f,  0.5f, YELLOW),
+		V( 0.5f, -0.5f, -0.5f, YELLOW),
+		V( 0.5f,  0.5f, -0.5f, YELLOW),
+		V( 0.5f,  0.5f, -0.5f, YELLOW),
+		V( 0.5f,  0.5f,  0.5f, YELLOW),
+		V( 0.5f, -0.5f,  0.5f, YELLOW),
 
-    -0.5,-0.5,-0.5, 0,0,1,
-    -0.5,-0.5, 0.5, 0,0,1,
-    -0.5, 0.5, 0.5, 0,0,1,
+		V(-0.5f,  0.5f,  0.5f, CYAN),
+		V( 0.5f,  0.5f,  0.5f, CYAN),
+		V( 0.5f,  0.5f, -0.5f, CYAN),
+		V( 0.5f,  0.5f, -0.5f, CYAN),
+		V(-0.5f,  0.5f, -0.5f, CYAN),
+		V(-0.5f,  0.5f,  0.5f, CYAN),
 
-    -0.5,-0.5,-0.5, 0,0,1,
-    -0.5, 0.5, 0.5, 0,0,1,
-    -0.5, 0.5,-0.5, 0,0,1,
+		V(-0.5f, -0.5f, -0.5f, MAGENTA),
+		V( 0.5f, -0.5f, -0.5f, MAGENTA),
+		V( 0.5f, -0.5f,  0.5f, MAGENTA),
+		V( 0.5f, -0.5f,  0.5f, MAGENTA),
+		V(-0.5f, -0.5f,  0.5f, MAGENTA),
+		V(-0.5f, -0.5f, -0.5f, MAGENTA),
+	};
 
-    0.5,-0.5,-0.5, 1,1,0,
-    0.5, 0.5, 0.5, 1,1,0,
-    0.5,-0.5, 0.5, 1,1,0,
-
-    0.5,-0.5,-0.5, 1,1,0,
-    0.5, 0.5,-0.5, 1,1,0,
-    0.5, 0.5, 0.5, 1,1,0,
-
-    -0.5, 0.5,-0.5, 1,0,1,
-    -0.5, 0.5, 0.5, 1,0,1,
-    0.5, 0.5, 0.5, 1,0,1,
-
-    -0.5, 0.5,-0.5, 1,0,1,
-    0.5, 0.5, 0.5, 1,0,1,
-    0.5, 0.5,-0.5, 1,0,1,
-
-    -0.5,-0.5,-0.5, 0,1,1,
-    0.5,-0.5, 0.5, 0,1,1,
-    -0.5,-0.5, 0.5, 0,1,1,
-
-    -0.5,-0.5,-0.5, 0,1,1,
-    0.5,-0.5,-0.5, 0,1,1,
-    0.5,-0.5, 0.5, 0,1,1,
-};
+	#undef V
 
 	GLuint VBO, VAO;
 
