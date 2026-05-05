@@ -52,6 +52,9 @@ vector<Cube> cubes = {
 		 0.4f,
 		 false, false, false,
 		 0.0f, 0.0f, 0.0f}};
+
+int selectedCubeIndex = 0;
+
 const GLuint WIDTH = 1000, HEIGHT = 1000;
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
@@ -64,6 +67,7 @@ void handleScaleKeys(int key);
 void prepareFrame();
 void updateCubesRotation(float frameDelta);
 glm::mat4 buildCubeModelMatrix(const Cube &cube);
+Cube &getSelectedCube();
 
 void showControlsGuide();
 
@@ -177,6 +181,11 @@ void prepareFrame()
 	glPointSize(20);
 }
 
+Cube &getSelectedCube()
+{
+	return cubes[selectedCubeIndex];
+}
+
 void updateCubesRotation(float frameDelta)
 {
 	const float ROTATION_FACTOR = 1.0f;
@@ -247,6 +256,18 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
+	if (key == GLFW_KEY_TAB)
+	{
+		selectedCubeIndex =
+				(selectedCubeIndex + 1) % cubes.size();
+
+		cout << "Cube selected: "
+				 << selectedCubeIndex + 1
+				 << endl;
+
+		return;
+	}
+
 	handleRotationKeys(key);
 	handleMovementKeys(key);
 	handleScaleKeys(key);
@@ -254,44 +275,50 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 void handleRotationKeys(int key)
 {
+	Cube &cube = getSelectedCube();
+
 	if (key == GLFW_KEY_X)
-		cubes[0].rotateX = !cubes[0].rotateX;
+		cube.rotateX = !cube.rotateX;
 
 	if (key == GLFW_KEY_Y)
-		cubes[0].rotateY = !cubes[0].rotateY;
+		cube.rotateY = !cube.rotateY;
 
 	if (key == GLFW_KEY_Z)
-		cubes[0].rotateZ = !cubes[0].rotateZ;
+		cube.rotateZ = !cube.rotateZ;
 }
 
 void handleMovementKeys(int key)
 {
+	Cube &cube = getSelectedCube();
+
 	if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT)
-		cubes[0].position.x -= 0.1f;
+		cube.position.x -= 0.1f;
 
 	if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT)
-		cubes[0].position.x += 0.1f;
+		cube.position.x += 0.1f;
 
 	if (key == GLFW_KEY_I || key == GLFW_KEY_UP)
-		cubes[0].position.y += 0.1f;
+		cube.position.y += 0.1f;
 
 	if (key == GLFW_KEY_J || key == GLFW_KEY_DOWN)
-		cubes[0].position.y -= 0.1f;
+		cube.position.y -= 0.1f;
 
 	if (key == GLFW_KEY_W)
-		cubes[0].position.z -= 0.1f;
+		cube.position.z -= 0.1f;
 
 	if (key == GLFW_KEY_S)
-		cubes[0].position.z += 0.1f;
+		cube.position.z += 0.1f;
 }
 
 void handleScaleKeys(int key)
 {
-	if (key == GLFW_KEY_LEFT_BRACKET && cubes[0].scale > 0.2f)
-		cubes[0].scale -= 0.1f;
+	Cube &cube = getSelectedCube();
 
-	if (key == GLFW_KEY_RIGHT_BRACKET && cubes[0].scale < 1.2f)
-		cubes[0].scale += 0.1f;
+	if (key == GLFW_KEY_LEFT_BRACKET && cube.scale > 0.2f)
+		cube.scale -= 0.1f;
+
+	if (key == GLFW_KEY_RIGHT_BRACKET && cube.scale < 1.2f)
+		cube.scale += 0.1f;
 }
 
 int setupShader()
@@ -348,6 +375,7 @@ void showControlsGuide()
 	cout << " Bem-vindo ao Squares 3D! " << endl;
 	cout << " Controle seu cubo utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
+	cout << " Selecionar : TAB (troca cubo ativo)" << endl;
 	cout << " Movimento X : A | D  ou  <- | ->" << endl;
 	cout << " Movimento Y : I | J  ou  /\\ | \\/" << endl;
 	cout << " Movimento Z : W | S" << endl;
