@@ -100,10 +100,8 @@ int main()
 
 	glUseProgram(shaderID);
 
-	glm::mat4 model = glm::mat4(1);
+	glm::mat4 model = glm::mat4(1.0f);
 	GLint modelLoc = glGetUniformLocation(shaderID, "model");
-	model = glm::rotate(model, /*(GLfloat)glfwGetTime()*/glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -117,26 +115,49 @@ int main()
 		glLineWidth(10);
 		glPointSize(20);
 
-		float angle = (GLfloat)glfwGetTime();
+		model = glm::mat4(1.0f);
 
-		model = glm::mat4(1); 
-		if (rotateX)
-		{
-			model = glm::rotate(model, angle, glm::vec3(1.0f, 0.0f, 0.0f));
-			
-		}
-		else if (rotateY)
-		{
-			model = glm::rotate(model, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::translate(
+				model,
+				cube.position
+		);
 
-		}
-		else if (rotateZ)
-		{
-			model = glm::rotate(model, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(
+				model,
+				glm::vec3(cube.scale)
+		);
 
-		}
+		if (cube.rotateX)
+				cube.angleX += 0.01f;
+		if (cube.rotateY)
+				cube.angleY += 0.01f;
+		if (cube.rotateZ)
+				cube.angleZ += 0.01f;
 
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		model = glm::rotate(
+				model,
+				cube.angleX,
+				glm::vec3(1.0f, 0.0f, 0.0f)
+		);
+
+		model = glm::rotate(
+				model,
+				cube.angleY,
+				glm::vec3(0.0f, 1.0f, 0.0f)
+		);
+
+		model = glm::rotate(
+				model,
+				cube.angleZ,
+				glm::vec3(0.0f, 0.0f, 1.0f)
+		);
+
+		glUniformMatrix4fv(
+				modelLoc,
+				1,
+				GL_FALSE,
+				glm::value_ptr(model)
+		);
 
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -196,7 +217,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_J)
 			cube.position.y -= 0.1f;
 
-	if (key == GLFW_KEY_LEFT_BRACKET)
+	if (key == GLFW_KEY_LEFT_BRACKET && cube.scale > 0.2f)
     cube.scale -= 0.1f;
 
 	if (key == GLFW_KEY_RIGHT_BRACKET)
