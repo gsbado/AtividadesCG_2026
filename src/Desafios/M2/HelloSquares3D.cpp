@@ -229,13 +229,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_Z)
 		cube.rotateZ = !cube.rotateZ;
 
-	if (key == GLFW_KEY_A)
+	if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT)
 		cube.position.x -= 0.1f;
-	if (key == GLFW_KEY_D)
+	if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT)
 		cube.position.x += 0.1f;
-	if (key == GLFW_KEY_I)
+	if (key == GLFW_KEY_I || key == GLFW_KEY_UP)
 		cube.position.y += 0.1f;
-	if (key == GLFW_KEY_J)
+	if (key == GLFW_KEY_J || key == GLFW_KEY_DOWN)
 		cube.position.y -= 0.1f;
 
 	if (key == GLFW_KEY_W)
@@ -245,7 +245,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_LEFT_BRACKET && cube.scale > 0.2f)
 		cube.scale -= 0.1f;
-	if (key == GLFW_KEY_RIGHT_BRACKET)
+	if (key == GLFW_KEY_RIGHT_BRACKET && cube.scale < 1.2f)
 		cube.scale += 0.1f;
 }
 
