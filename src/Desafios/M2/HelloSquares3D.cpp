@@ -45,6 +45,10 @@ const GLuint WIDTH = 1000, HEIGHT = 1000;
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+
+void updateCubeRotation(float frameDelta);
+glm::mat4 buildCubeModelMatrix();
+
 int setupShader();
 int setupGeometry();
 
@@ -107,7 +111,6 @@ int main()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	const float ROTATION_FACTOR = 1.0f;
 	float previousFrameTime = (float)glfwGetTime();
 
 	while (!glfwWindowShouldClose(window))
@@ -117,6 +120,7 @@ int main()
 		previousFrameTime = frameTime;
 
 		glfwPollEvents();
+		updateCubeRotation(frameDelta);
 
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -124,42 +128,7 @@ int main()
 		glLineWidth(10);
 		glPointSize(20);
 
-		model = glm::mat4(1.0f);
-
-		model = glm::translate(
-				model,
-				cube.position
-		);
-
-		model = glm::scale(
-				model,
-				glm::vec3(cube.scale)
-		);
-
-		if (cube.rotateX)
-			cube.angleX += ROTATION_FACTOR * frameDelta;
-		if (cube.rotateY)
-			cube.angleY += ROTATION_FACTOR * frameDelta;
-		if (cube.rotateZ)
-			cube.angleZ += ROTATION_FACTOR * frameDelta;
-
-		model = glm::rotate(
-				model,
-				cube.angleX,
-				glm::vec3(1.0f, 0.0f, 0.0f)
-		);
-
-		model = glm::rotate(
-				model,
-				cube.angleY,
-				glm::vec3(0.0f, 1.0f, 0.0f)
-		);
-
-		model = glm::rotate(
-				model,
-				cube.angleZ,
-				glm::vec3(0.0f, 0.0f, 1.0f)
-		);
+		model = buildCubeModelMatrix();
 
 		glUniformMatrix4fv(
 				modelMatrixLocation,
@@ -182,6 +151,55 @@ int main()
 }
 
 // ---- IMPLEMENTAÇÃO DAS FUNÇÕES ----
+
+void updateCubeRotation(float frameDelta)
+{
+	const float ROTATION_FACTOR = 1.0f;
+
+	if (cube.rotateX)
+		cube.angleX += ROTATION_FACTOR * frameDelta;
+
+	if (cube.rotateY)
+		cube.angleY += ROTATION_FACTOR * frameDelta;
+
+	if (cube.rotateZ)
+		cube.angleZ += ROTATION_FACTOR * frameDelta;
+}
+
+glm::mat4 buildCubeModelMatrix()
+{
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+	modelMatrix = glm::translate(
+			modelMatrix,
+			cube.position
+	);
+
+	modelMatrix = glm::scale(
+			modelMatrix,
+			glm::vec3(cube.scale)
+	);
+
+	modelMatrix = glm::rotate(
+			modelMatrix,
+			cube.angleX,
+			glm::vec3(1.0f, 0.0f, 0.0f)
+	);
+
+	modelMatrix = glm::rotate(
+			modelMatrix,
+			cube.angleY,
+			glm::vec3(0.0f, 1.0f, 0.0f)
+	);
+
+	modelMatrix = glm::rotate(
+			modelMatrix,
+			cube.angleZ,
+			glm::vec3(0.0f, 0.0f, 1.0f)
+	);
+
+	return modelMatrix;
+}
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
