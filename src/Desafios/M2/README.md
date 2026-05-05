@@ -75,9 +75,9 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ## 🖥️ Preview
 
-[▶ Ver demonstração em vídeo](assets/demos/DEMOHelloSquares3D.mp4)
+[▶ Ver demonstração em vídeo](../../../assets/demos/DEMOHelloSquares3D.mp4)
 
-![Hello Squares 3D](assets/demos/HelloSquares3D.png)
+![Hello Squares 3D](../../../assets/demos/HelloSquares3D.png)
 > Exemplo da interface do projeto
 
 ## 📌 Observações Finais
