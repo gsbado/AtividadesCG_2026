@@ -5,7 +5,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 ## 📌 Entregas de trabalho
 
 1. Módulo 1: [Hello3D](src/Desafios/M1/Hello3D.cpp) - implementação principal de renderização básica
-2. 
+2. Módulo 2: [HelloSquares3D](src/Desafios/M2/HelloSquares3D.cpp) - modelagem de um cubo com aplicação de transformações geométricas (translação, escala, rotação) e suporte a múltiplas instâncias via teclado
 
 ## 📂 Estrutura do Repositório
 
@@ -17,7 +17,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 ├── 📂 Common/                # Código reutilizável
 ├── 📂 include/               # Bibliotecas e headers
 ├── 📂 src/
-│   ├── 📂 Desafios/
+│   ├── 📂 Desafios/          # Atividades práticas desenvolvidas ao longo do semestre 2026/1
 │   │   ├── 📂 M1/
 │   │   |   ├── Hello3D.cpp
 │   │   |   └── RESULT.md
