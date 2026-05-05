@@ -46,6 +46,10 @@ const GLuint WIDTH = 1000, HEIGHT = 1000;
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
+void handleRotationKeys(int key);
+void handleMovementKeys(int key);
+void handleScaleKeys(int key);
+
 void prepareFrame();
 void updateCubeRotation(float frameDelta);
 glm::mat4 buildCubeModelMatrix();
@@ -222,29 +226,49 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ESCAPE)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
+	handleRotationKeys(key);
+	handleMovementKeys(key);
+	handleScaleKeys(key);
+}
+
+void handleRotationKeys(int key)
+{
 	if (key == GLFW_KEY_X)
 		cube.rotateX = !cube.rotateX;
+
 	if (key == GLFW_KEY_Y)
 		cube.rotateY = !cube.rotateY;
+
 	if (key == GLFW_KEY_Z)
 		cube.rotateZ = !cube.rotateZ;
+}
 
+void handleMovementKeys(int key)
+{
 	if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT)
 		cube.position.x -= 0.1f;
+
 	if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT)
 		cube.position.x += 0.1f;
+
 	if (key == GLFW_KEY_I || key == GLFW_KEY_UP)
 		cube.position.y += 0.1f;
+
 	if (key == GLFW_KEY_J || key == GLFW_KEY_DOWN)
 		cube.position.y -= 0.1f;
 
 	if (key == GLFW_KEY_W)
 		cube.position.z -= 0.1f;
+
 	if (key == GLFW_KEY_S)
 		cube.position.z += 0.1f;
+}
 
+void handleScaleKeys(int key)
+{
 	if (key == GLFW_KEY_LEFT_BRACKET && cube.scale > 0.2f)
 		cube.scale -= 0.1f;
+		
 	if (key == GLFW_KEY_RIGHT_BRACKET && cube.scale < 1.2f)
 		cube.scale += 0.1f;
 }
