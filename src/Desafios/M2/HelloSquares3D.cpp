@@ -46,8 +46,11 @@ const GLuint WIDTH = 1000, HEIGHT = 1000;
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
+void prepareFrame();
 void updateCubeRotation(float frameDelta);
 glm::mat4 buildCubeModelMatrix();
+
+void renderCube(GLuint cubeVAO, GLint modelMatrixLocation);
 
 int setupShader();
 int setupGeometry();
@@ -122,24 +125,9 @@ int main()
 		glfwPollEvents();
 		updateCubeRotation(frameDelta);
 
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		prepareFrame();
 
-		glLineWidth(10);
-		glPointSize(20);
-
-		model = buildCubeModelMatrix();
-
-		glUniformMatrix4fv(
-				modelMatrixLocation,
-				1,
-				GL_FALSE,
-				glm::value_ptr(model)
-		);
-
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
+		renderCube(VAO, modelMatrixLocation);
 
 		glfwSwapBuffers(window);
 	}
@@ -151,6 +139,15 @@ int main()
 }
 
 // ---- IMPLEMENTAÇÃO DAS FUNÇÕES ----
+
+void prepareFrame()
+{
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glLineWidth(10);
+	glPointSize(20);
+}
 
 void updateCubeRotation(float frameDelta)
 {
@@ -199,6 +196,22 @@ glm::mat4 buildCubeModelMatrix()
 	);
 
 	return modelMatrix;
+}
+
+void renderCube(GLuint cubeVAO, GLint modelMatrixLocation)
+{
+	glm::mat4 modelMatrix = buildCubeModelMatrix();
+
+	glUniformMatrix4fv(
+			modelMatrixLocation,
+			1,
+			GL_FALSE,
+			glm::value_ptr(modelMatrix)
+	);
+
+	glBindVertexArray(cubeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
@@ -361,4 +374,3 @@ int setupGeometry()
 
 	return VAO;
 }
-
