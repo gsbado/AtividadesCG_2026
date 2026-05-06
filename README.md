@@ -11,13 +11,13 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 
 ```plaintext
 📂 ATIVIDADESCG_2026/
-├── 📂 assets/                # Modelos 3D, texturas, fontes, etc.
-├── 📂 build/                 # Arquivos gerados pelo CMake
-├── 📂 Code snippets/         # Trechos de código auxiliares
-├── 📂 Common/                # Código reutilizável
-├── 📂 include/               # Bibliotecas e headers
+├── 📂 assets/                <- Modelos 3D, texturas, fontes, etc.
+├── 📂 build/                 <- Arquivos gerados pelo CMake
+├── 📂 Code snippets/         <- Trechos de código auxiliares
+├── 📂 Common/                <- Código reutilizável
+├── 📂 include/               <- Bibliotecas e headers
 ├── 📂 src/
-│   ├── 📂 Desafios/          # Atividades práticas desenvolvidas ao longo do semestre 2026/1
+│   ├── 📂 Desafios/          <- Atividades práticas desenvolvidas ao longo do semestre 2026/1
 │   │   ├── 📂 M1/
 │   │   |   ├── Hello3D.cpp
 │   │   |   └── RESULT.md
@@ -26,9 +26,9 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 │   │       └── README.md
 │   ├── SpherePhong.cpp
 │   └── TriangleTex.cpp
-├── 📄 CMakeLists.txt         # Configuração de build
-├── 📄 GettingStarted.md      # Guia detalhado de configuração
-└── 📄 README.md              # Documentação principal
+├── 📄 CMakeLists.txt         <- Configuração de build
+├── 📄 GettingStarted.md      <- Guia detalhado de configuração
+└── 📄 README.md              <- Documentação principal
 ```
 
 ---
