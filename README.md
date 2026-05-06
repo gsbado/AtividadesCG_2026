@@ -11,24 +11,37 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 
 ```plaintext
 📂 ATIVIDADESCG_2026/
-├── 📂 assets/                # Modelos 3D, texturas, fontes, etc.
-├── 📂 build/                 # Arquivos gerados pelo CMake
-├── 📂 Code snippets/         # Trechos de código auxiliares
-├── 📂 Common/                # Código reutilizável
-├── 📂 include/               # Bibliotecas e headers
+├── 📂 assets/                <- Modelos 3D, texturas, fontes, etc.
+├── 📂 build/                 <- Arquivos gerados pelo CMake
+├── 📂 Code snippets/         <- Trechos de código auxiliares
+├── 📂 Common/                <- Código reutilizável
+├── 📂 include/               <- Bibliotecas e headers
 ├── 📂 src/
-│   ├── 📂 Desafios/          # Atividades práticas desenvolvidas ao longo do semestre 2026/1
+│   ├── 📂 Desafios/          <- Atividades práticas desenvolvidas ao longo do semestre 2026/1
 │   │   ├── 📂 M1/
 │   │   |   ├── Hello3D.cpp
 │   │   |   └── RESULT.md
-│   │   └── 📂 M2/
-│   │       ├── HelloSquares3D.cpp
+│   │   ├── 📂 M2/
+│   │   |   ├── HelloSquares3D.cpp
+│   │   |   └── README.md
+|   |   ├── 📂 M3/
+|   |   |   ├── nomedoarquivo.cpp
+│   │   |   └── README.md
+|   |   ├── 📂 M4/
+|   |   |   ├── nomedoarquivo.cpp
+│   │   |   └── README.md
+|   |   ├── 📂 M5/
+|   |   |   ├── nomedoarquivo.cpp
+│   │   |   └── README.md
+|   |   └── 📂 M6/
+|   |       ├── nomedoarquivo.cpp
 │   │       └── README.md
+│   ├── CuboIluminacao.cpp
 │   ├── SpherePhong.cpp
-│   └── TriangleTex.cpp
-├── 📄 CMakeLists.txt         # Configuração de build
-├── 📄 GettingStarted.md      # Guia detalhado de configuração
-└── 📄 README.md              # Documentação principal
+|   └── TriangleTex.cpp
+├── 📄 CMakeLists.txt         <- Configuração de build
+├── 📄 GettingStarted.md      <- Guia detalhado de configuração
+└── 📄 README.md              <- Documentação principal
 ```
 
 ---
