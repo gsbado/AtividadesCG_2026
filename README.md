@@ -6,6 +6,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 
 1. Módulo 1: [Hello3D](src/Desafios/M1/Hello3D.cpp) - implementação principal de renderização básica
 2. Módulo 2: [HelloSquares3D](src/Desafios/M2/HelloSquares3D.cpp) - modelagem de um cubo com aplicação de transformações geométricas (translação, escala, rotação) e suporte a múltiplas instâncias via teclado
+3. Módulo 3: [HelloTextures3D](src/Desafios/M3/HelloTextures3D.cpp) - 
 
 ## 📂 Estrutura do Repositório
 
@@ -25,7 +26,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 │   │   |   ├── HelloSquares3D.cpp
 │   │   |   └── README.md
 |   |   ├── 📂 M3/
-|   |   |   ├── nomedoarquivo.cpp
+|   |   |   ├── HelloTextures3D.cpp
 │   │   |   └── README.md
 |   |   ├── 📂 M4/
 |   |   |   ├── nomedoarquivo.cpp
