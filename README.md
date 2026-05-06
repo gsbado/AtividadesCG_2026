@@ -21,11 +21,24 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 │   │   ├── 📂 M1/
 │   │   |   ├── Hello3D.cpp
 │   │   |   └── RESULT.md
-│   │   └── 📂 M2/
-│   │       ├── HelloSquares3D.cpp
+│   │   ├── 📂 M2/
+│   │   |   ├── HelloSquares3D.cpp
+│   │   |   └── README.md
+|   |   ├── 📂 M3/
+|   |   |   ├── nomedoarquivo.cpp
+│   │   |   └── README.md
+|   |   ├── 📂 M4/
+|   |   |   ├── nomedoarquivo.cpp
+│   │   |   └── README.md
+|   |   ├── 📂 M5/
+|   |   |   ├── nomedoarquivo.cpp
+│   │   |   └── README.md
+|   |   └── 📂 M6/
+|   |       ├── nomedoarquivo.cpp
 │   │       └── README.md
+│   ├── CuboIluminacao.cpp
 │   ├── SpherePhong.cpp
-│   └── TriangleTex.cpp
+|   └── TriangleTex.cpp
 ├── 📄 CMakeLists.txt         <- Configuração de build
 ├── 📄 GettingStarted.md      <- Guia detalhado de configuração
 └── 📄 README.md              <- Documentação principal
