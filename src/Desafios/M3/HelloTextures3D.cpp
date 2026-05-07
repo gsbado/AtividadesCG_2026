@@ -7,7 +7,11 @@
  */
 
 // ---- HEADERS GLFW, GLAD, GLM ----
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <assert.h>
 #include <glad/glad.h>
@@ -78,6 +82,9 @@ void renderCube(
 		GLint modelMatrixLocation);
 
 int setupShader();
+string loadTexturePathFromMTL(const string &mtlPath);
+GLuint loadTexture(const string &texturePath);
+GLuint loadSimpleOBJ(string filePath, int &nVertices);
 
 // ---- SHADERS ----
 const GLchar *vertexShaderSource = "#version 450\n"
@@ -110,7 +117,6 @@ int main()
 	glfwMakeContextCurrent(window);
 
 	glfwSetKeyCallback(window, key_callback);
-
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
@@ -120,7 +126,6 @@ int main()
 	const GLubyte *version = glGetString(GL_VERSION);
 	cout << "Renderer: " << renderer << endl;
 	cout << "OpenGL version supported " << version << endl;
-
 	showControlsGuide();
 
 	int width, height;
@@ -128,11 +133,13 @@ int main()
 	glViewport(0, 0, width, height);
 
 	GLuint shaderID = setupShader();
-	GLuint VAO = loadSimpleOBJ("../../../assets/Modelos3D/Cube.obj", nVertices);
+	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Cube.obj", nVertices);
+	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Cube.mtl");
+	GLuint textureID = loadTexture("../assets/Modelos3D/" + textureName);
 
 	glUseProgram(shaderID);
 
-	glm::mat4 model = glm::mat4(1.0f);
+	glUniform1i(glGetUniformLocation(shaderID,"texture1"),0);
 	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
 
 	glEnable(GL_DEPTH_TEST);
@@ -152,6 +159,9 @@ int main()
 
 		prepareFrame();
 
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D,textureID);
+
 		for (const Cube &cube : cubes)
 		{
 			renderCube(
@@ -163,6 +173,7 @@ int main()
 		glfwSwapBuffers(window);
 	}
 
+	glDeleteTextures(1, &textureID);
 	glDeleteVertexArrays(1, &VAO);
 
 	glfwTerminate();
@@ -170,14 +181,78 @@ int main()
 }
 
 // ---- IMPLEMENTAÇÃO DAS FUNÇÕES ----
+string loadTexturePathFromMTL(const string &mtlPath)
+{
+	ifstream file(mtlPath);
+
+	if (!file.is_open())
+	{
+		cout << "Erro ao abrir MTL"
+				 << endl;
+		return "";
+	}
+
+	string line;
+
+	while (getline(file, line))
+	{
+		istringstream ss(line);
+		string word;
+		ss >> word;
+		if (word == "map_Kd")
+		{
+			string textureName;
+			ss >> textureName;
+			return textureName;
+		}
+	}
+
+	return "";
+}
+
+GLuint loadTexture(
+		const string &texturePath)
+{
+	GLuint textureID;
+
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_set_flip_vertically_on_load(true);
+
+	int width;
+	int height;
+	int channels;
+
+	unsigned char *data = stbi_load(
+					texturePath.c_str(),
+					&width,
+					&height,
+					&channels,
+					0);
+
+	if (data)
+	{
+		GLenum format = (channels == 4)
+						? GL_RGBA
+						: GL_RGB;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	stbi_image_free(data);
+
+	return textureID;
+}
 
 void prepareFrame()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glLineWidth(10);
-	glPointSize(20);
 }
 
 Cube &getSelectedCube()
@@ -205,7 +280,6 @@ void updateCubesRotation(float frameDelta)
 glm::mat4 buildCubeModelMatrix(const Cube &cube)
 {
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
-
 	modelMatrix = glm::translate(
 			modelMatrix,
 			cube.position);
