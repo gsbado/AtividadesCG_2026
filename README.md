@@ -6,7 +6,8 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 
 1. Módulo 1: [Hello3D](src/Desafios/M1/Hello3D.cpp) - implementação principal de renderização básica
 2. Módulo 2: [HelloSquares3D](src/Desafios/M2/HelloSquares3D.cpp) - modelagem de um cubo com aplicação de transformações geométricas (translação, escala, rotação) e suporte a múltiplas instâncias via teclado
-3. Módulo 3: [HelloTextures3D](src/Desafios/M3/HelloTextures3D.cpp) - 
+3. Módulo 3: [HelloTextures3D](src/Desafios/M3/HelloTextures3D.cpp) - importação de geometria via .OBJ, leitura de materiais .MTL e renderização de objetos 3D texturizados com mapeamento UV
+4. Módulo 4: [HelloIlumination3D](src/Desafios/M4/HelloIlumination3D.cpp) - [loading]
 
 ## 📂 Estrutura do Repositório
 
@@ -29,7 +30,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 |   |   |   ├── HelloTextures3D.cpp
 │   │   |   └── README.md
 |   |   ├── 📂 M4/
-|   |   |   ├── nomedoarquivo.cpp
+|   |   |   ├── HelloIlumination3D.cpp
 │   │   |   └── README.md
 |   |   ├── 📂 M5/
 |   |   |   ├── nomedoarquivo.cpp
