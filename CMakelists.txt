@@ -49,6 +49,7 @@ set(EXERCISES
     SpherePhong
     CuboIluminacao
     HelloSquares3D
+    HelloTextures3D
 )
 
 add_compile_options(-Wno-pragmas)
@@ -78,6 +79,8 @@ foreach(EXERCISE ${EXERCISES})
         add_executable(${EXERCISE} src/Desafios/M1/${EXERCISE}.cpp ${GLAD_C_FILE})
     elseif(${EXERCISE} STREQUAL "HelloSquares3D")
         add_executable(${EXERCISE} src/Desafios/M2/${EXERCISE}.cpp ${GLAD_C_FILE})
+    elseif(${EXERCISE} STREQUAL "HelloTextures3D")
+        add_executable(${EXERCISE} src/Desafios/M3/${EXERCISE}.cpp "Code snippets/LoadSimpleOBJ.cpp" ${GLAD_C_FILE})
     else()
         add_executable(${EXERCISE} src/${EXERCISE}.cpp ${GLAD_C_FILE})
     endif()
