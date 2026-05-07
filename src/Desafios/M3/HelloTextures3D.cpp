@@ -445,7 +445,7 @@ void showControlsGuide()
 {
 	cout << endl;
 	cout << "==========================================" << endl;
-	cout << " Bem-vindo ao Squares 3D! " << endl;
+	cout << " Bem-vindo ao Hello Textures 3D! " << endl;
 	cout << " Controle seu cubo utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
 	cout << " Selecionar : TAB (troca cubo ativo)" << endl;
