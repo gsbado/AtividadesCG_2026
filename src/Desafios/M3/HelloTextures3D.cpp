@@ -61,6 +61,8 @@ int selectedCubeIndex = 0;
 int nVertices = 0;
 
 const GLuint WIDTH = 1000, HEIGHT = 1000;
+const float MOVEMENT_STEP = 0.1f;
+const float SCALE_STEP = 0.1f;
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -117,6 +119,7 @@ int main()
 	glfwMakeContextCurrent(window);
 
 	glfwSetKeyCallback(window, key_callback);
+
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
@@ -126,6 +129,7 @@ int main()
 	const GLubyte *version = glGetString(GL_VERSION);
 	cout << "Renderer: " << renderer << endl;
 	cout << "OpenGL version supported " << version << endl;
+
 	showControlsGuide();
 
 	int width, height;
@@ -139,7 +143,7 @@ int main()
 
 	glUseProgram(shaderID);
 
-	glUniform1i(glGetUniformLocation(shaderID,"texture1"),0);
+	glUniform1i(glGetUniformLocation(shaderID, "texture1"), 0);
 	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
 
 	glEnable(GL_DEPTH_TEST);
@@ -160,7 +164,7 @@ int main()
 		prepareFrame();
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D,textureID);
+		glBindTexture(GL_TEXTURE_2D, textureID);
 
 		for (const Cube &cube : cubes)
 		{
@@ -229,21 +233,26 @@ GLuint loadTexture(
 	int channels;
 
 	unsigned char *data = stbi_load(
-					texturePath.c_str(),
-					&width,
-					&height,
-					&channels,
-					0);
+			texturePath.c_str(),
+			&width,
+			&height,
+			&channels,
+			0);
 
-	if (data)
+	if (!data)
 	{
-		GLenum format = (channels == 4)
-						? GL_RGBA
-						: GL_RGB;
+		cout << "Erro ao carregar textura: "
+				 << texturePath
+				 << endl;
 
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		return 0;
 	}
+	GLenum format = (channels == 4)
+											? GL_RGBA
+											: GL_RGB;
+
+	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(data);
 
 	return textureID;
@@ -280,6 +289,7 @@ void updateCubesRotation(float frameDelta)
 glm::mat4 buildCubeModelMatrix(const Cube &cube)
 {
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
+
 	modelMatrix = glm::translate(
 			modelMatrix,
 			cube.position);
@@ -365,22 +375,22 @@ void handleMovementKeys(int key)
 	Cube &cube = getSelectedCube();
 
 	if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT)
-		cube.position.x -= 0.1f;
+		cube.position.x -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT)
-		cube.position.x += 0.1f;
+		cube.position.x += MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_I || key == GLFW_KEY_UP)
-		cube.position.y += 0.1f;
+		cube.position.y += MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_J || key == GLFW_KEY_DOWN)
-		cube.position.y -= 0.1f;
+		cube.position.y -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_W)
-		cube.position.z -= 0.1f;
+		cube.position.z -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_S)
-		cube.position.z += 0.1f;
+		cube.position.z += MOVEMENT_STEP;
 }
 
 void handleScaleKeys(int key)
@@ -388,10 +398,10 @@ void handleScaleKeys(int key)
 	Cube &cube = getSelectedCube();
 
 	if (key == GLFW_KEY_LEFT_BRACKET && cube.scale > 0.2f)
-		cube.scale -= 0.1f;
+		cube.scale -= SCALE_STEP;
 
 	if (key == GLFW_KEY_RIGHT_BRACKET && cube.scale < 1.2f)
-		cube.scale += 0.1f;
+		cube.scale += SCALE_STEP;
 }
 
 int setupShader()
