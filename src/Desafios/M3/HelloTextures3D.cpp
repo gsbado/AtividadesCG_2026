@@ -3,7 +3,7 @@
  * Modificado por Gabriela Spanemberg Bado
  * para a disciplina de Computação Gráfica - Unisinos
  * Versão inicial: 7/4/2017
- * Última atualização em 06/05/2026
+ * Última atualização em 07/05/2026
  */
 
 // ---- HEADERS GLFW, GLAD, GLM ----
