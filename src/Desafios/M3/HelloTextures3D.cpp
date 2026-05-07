@@ -54,6 +54,7 @@ vector<Cube> cubes = {
 		 0.0f, 0.0f, 0.0f}};
 
 int selectedCubeIndex = 0;
+int nVertices = 0;
 
 const GLuint WIDTH = 1000, HEIGHT = 1000;
 
@@ -129,7 +130,7 @@ int main()
 	glViewport(0, 0, width, height);
 
 	GLuint shaderID = setupShader();
-	GLuint VAO = setupGeometry();
+	GLuint VAO = loadSimpleOBJ("../../../assets/Modelos3D/Cube.obj", nVertices);
 
 	glUseProgram(shaderID);
 
@@ -244,7 +245,7 @@ void renderCube(const Cube &cube, GLuint cubeVAO, GLint modelMatrixLocation)
 			glm::value_ptr(modelMatrix));
 
 	glBindVertexArray(cubeVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glDrawArrays(GL_TRIANGLES, 0, nVertices);
 	glBindVertexArray(0);
 }
 
