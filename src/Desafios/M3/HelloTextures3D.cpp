@@ -78,7 +78,6 @@ void renderCube(
 		GLint modelMatrixLocation);
 
 int setupShader();
-int setupGeometry();
 
 // ---- SHADERS ----
 // Código fonte do Vertex Shader (em GLSL): ainda hardcoded
@@ -385,87 +384,4 @@ void showControlsGuide()
 	cout << " Sair        : ESC" << endl;
 	cout << "==========================================" << endl;
 	cout << endl;
-}
-
-int setupGeometry()
-{
-	const float RED[] = {1.0f, 0.2f, 0.2f};
-	const float GREEN[] = {0.2f, 1.0f, 0.2f};
-	const float BLUE[] = {0.2f, 0.4f, 1.0f};
-	const float YELLOW[] = {1.0f, 1.0f, 0.1f};
-	const float CYAN[] = {0.1f, 1.0f, 1.0f};
-	const float MAGENTA[] = {1.0f, 0.2f, 1.0f};
-
-#define V(x, y, z, col) x, y, z, col[0], col[1], col[2]
-
-	GLfloat vertices[] = {
-			V(-0.5f, -0.5f, 0.5f, RED),
-			V(0.5f, -0.5f, 0.5f, RED),
-			V(0.5f, 0.5f, 0.5f, RED),
-			V(0.5f, 0.5f, 0.5f, RED),
-			V(-0.5f, 0.5f, 0.5f, RED),
-			V(-0.5f, -0.5f, 0.5f, RED),
-
-			V(0.5f, -0.5f, -0.5f, GREEN),
-			V(-0.5f, -0.5f, -0.5f, GREEN),
-			V(-0.5f, 0.5f, -0.5f, GREEN),
-			V(-0.5f, 0.5f, -0.5f, GREEN),
-			V(0.5f, 0.5f, -0.5f, GREEN),
-			V(0.5f, -0.5f, -0.5f, GREEN),
-
-			V(-0.5f, -0.5f, -0.5f, BLUE),
-			V(-0.5f, -0.5f, 0.5f, BLUE),
-			V(-0.5f, 0.5f, 0.5f, BLUE),
-			V(-0.5f, 0.5f, 0.5f, BLUE),
-			V(-0.5f, 0.5f, -0.5f, BLUE),
-			V(-0.5f, -0.5f, -0.5f, BLUE),
-
-			V(0.5f, -0.5f, 0.5f, YELLOW),
-			V(0.5f, -0.5f, -0.5f, YELLOW),
-			V(0.5f, 0.5f, -0.5f, YELLOW),
-			V(0.5f, 0.5f, -0.5f, YELLOW),
-			V(0.5f, 0.5f, 0.5f, YELLOW),
-			V(0.5f, -0.5f, 0.5f, YELLOW),
-
-			V(-0.5f, 0.5f, 0.5f, CYAN),
-			V(0.5f, 0.5f, 0.5f, CYAN),
-			V(0.5f, 0.5f, -0.5f, CYAN),
-			V(0.5f, 0.5f, -0.5f, CYAN),
-			V(-0.5f, 0.5f, -0.5f, CYAN),
-			V(-0.5f, 0.5f, 0.5f, CYAN),
-
-			V(-0.5f, -0.5f, -0.5f, MAGENTA),
-			V(0.5f, -0.5f, -0.5f, MAGENTA),
-			V(0.5f, -0.5f, 0.5f, MAGENTA),
-			V(0.5f, -0.5f, 0.5f, MAGENTA),
-			V(-0.5f, -0.5f, 0.5f, MAGENTA),
-			V(-0.5f, -0.5f, -0.5f, MAGENTA),
-	};
-
-#undef V
-
-	GLuint VBO, VAO;
-
-	glGenBuffers(1, &VBO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glGenVertexArrays(1, &VAO);
-
-	glBindVertexArray(VAO);
-
-	// Atributo posição (x, y, z)
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)0);
-	glEnableVertexAttribArray(0);
-
-	// Atributo cor (r, g, b)
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-
-	return VAO;
 }
