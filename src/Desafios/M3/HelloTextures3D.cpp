@@ -1,4 +1,4 @@
-/* Hello Textures 3D - código adaptado de HelloSquares3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle 
+/* Hello Textures 3D - código adaptado de HelloSquares3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
  *
  * Modificado por Gabriela Spanemberg Bado
  * para a disciplina de Computação Gráfica - Unisinos
@@ -80,26 +80,25 @@ void renderCube(
 int setupShader();
 
 // ---- SHADERS ----
-// Código fonte do Vertex Shader (em GLSL): ainda hardcoded
 const GLchar *vertexShaderSource = "#version 450\n"
 																	 "layout (location = 0) in vec3 position;\n"
 																	 "layout (location = 1) in vec3 color;\n"
+																	 "layout (location = 2) in vec2 texCoord;\n"
 																	 "uniform mat4 model;\n"
-																	 "out vec4 finalColor;\n"
+																	 "out vec2 fragTexCoord;\n"
 																	 "void main()\n"
 																	 "{\n"
-																	 //...pode ter mais linhas de código aqui!
-																	 "gl_Position = model * vec4(position, 1.0);\n"
-																	 "finalColor = vec4(color, 1.0);\n"
+																	 "   gl_Position = model * vec4(position, 1.0);\n"
+																	 "   fragTexCoord = texCoord;\n"
 																	 "}\0";
 
-// Código fonte do Fragment Shader (em GLSL): ainda hardcoded
 const GLchar *fragmentShaderSource = "#version 450\n"
-																		 "in vec4 finalColor;\n"
+																		 "in vec2 fragTexCoord;\n"
 																		 "out vec4 color;\n"
+																		 "uniform sampler2D texture1;\n"
 																		 "void main()\n"
 																		 "{\n"
-																		 "color = finalColor;\n"
+																		 "   color = texture(texture1, fragTexCoord);\n"
 																		 "}\n\0";
 
 // ---- FUNÇÃO MAIN ----
