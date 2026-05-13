@@ -3,7 +3,7 @@
  * Modificado por Gabriela Spanemberg Bado
  * para a disciplina de Computação Gráfica - Unisinos
  * Versão inicial: 7/4/2017
- * Última atualização em 11/05/2026
+ * Última atualização em 13/05/2026
  */
 
 // ---- HEADERS GLFW, GLAD, GLM ----
@@ -33,6 +33,8 @@ struct Object3D
 vector<Object3D> objects;
 int selectedObjectIndex = 0;
 int nVertices = 0;
+GLuint cubeVAO = 0;
+GLuint suzanneVAO = 0;
 
 const GLuint WIDTH = 1000, HEIGHT = 1000;
 const float MOVEMENT_STEP = 0.1f;
@@ -55,6 +57,8 @@ void showControlsGuide();
 void renderObject(
 		const Object3D &object,
 		GLint modelMatrixLocation);
+
+void initializeSceneObjects();
 
 int setupShader();
 GLuint loadSimpleOBJ(string filePath, int &nVertices);
@@ -107,46 +111,7 @@ int main()
 	glViewport(0, 0, width, height);
 
 	GLuint shaderID = setupShader();
-	GLuint cubeVAO = loadSimpleOBJ(
-			"../assets/Modelos3D/Cube.obj",
-			nVertices);
-
-	int cubeVertexCount = nVertices;
-
-	GLuint suzanneVAO = loadSimpleOBJ(
-			"../assets/Modelos3D/Suzanne/Suzanne.obj",
-			nVertices);
-
-	int suzanneVertexCount = nVertices;
-
-	// ---- Instâncias dos objetos ----
-	objects.push_back({cubeVAO,
-										 cubeVertexCount,
-
-										 glm::vec3(-0.5f, -0.5f, 0.0f),
-										 glm::vec3(0.4f),
-										 glm::vec3(0.0f)});
-
-	objects.push_back({suzanneVAO,
-										 suzanneVertexCount,
-
-										 glm::vec3(0.5f, -0.5f, 0.0f),
-										 glm::vec3(0.4f),
-										 glm::vec3(0.0f)});
-
-	objects.push_back({suzanneVAO,
-										 suzanneVertexCount,
-
-										 glm::vec3(-0.5f, 0.5f, 0.0f),
-										 glm::vec3(0.4f),
-										 glm::vec3(0.0f)});
-
-	objects.push_back({cubeVAO,
-										 cubeVertexCount,
-
-										 glm::vec3(0.5f, 0.5f, 0.0f),
-										 glm::vec3(0.4f),
-										 glm::vec3(0.0f)});
+	initializeSceneObjects();
 
 	glUseProgram(shaderID);
 
@@ -193,6 +158,50 @@ int main()
 }
 
 // ---- IMPLEMENTAÇÃO DAS FUNÇÕES ----
+
+void initializeSceneObjects()
+{
+	cubeVAO = loadSimpleOBJ(
+			"../assets/Modelos3D/Cube.obj",
+			nVertices);
+
+	int cubeVertexCount = nVertices;
+
+	suzanneVAO = loadSimpleOBJ(
+			"../assets/Modelos3D/Suzanne/Suzanne.obj",
+			nVertices);
+
+	int suzanneVertexCount = nVertices;
+
+	// ---- Instâncias dos objetos ----
+	objects.push_back({cubeVAO,
+										 cubeVertexCount,
+
+										 glm::vec3(-0.5f, -0.5f, 0.0f),
+										 glm::vec3(0.4f),
+										 glm::vec3(0.0f)});
+
+	objects.push_back({suzanneVAO,
+										 suzanneVertexCount,
+
+										 glm::vec3(0.5f, -0.5f, 0.0f),
+										 glm::vec3(0.4f),
+										 glm::vec3(0.0f)});
+
+	objects.push_back({suzanneVAO,
+										 suzanneVertexCount,
+
+										 glm::vec3(-0.5f, 0.5f, 0.0f),
+										 glm::vec3(0.4f),
+										 glm::vec3(0.0f)});
+
+	objects.push_back({cubeVAO,
+										 cubeVertexCount,
+
+										 glm::vec3(0.5f, 0.5f, 0.0f),
+										 glm::vec3(0.4f),
+										 glm::vec3(0.0f)});
+}
 
 void prepareFrame()
 {
