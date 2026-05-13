@@ -28,15 +28,8 @@ struct Object3D
 	int vertexCount;
 
 	glm::vec3 position;
-	float scale;
-
-	bool rotateX;
-	bool rotateY;
-	bool rotateZ;
-
-	float angleX;
-	float angleY;
-	float angleZ;
+	glm::vec3 scale;
+	glm::vec3 rotation;
 };
 
 // ---- VARIÁVEIS GLOBAIS ----
@@ -47,6 +40,7 @@ int nVertices = 0;
 const GLuint WIDTH = 1000, HEIGHT = 1000;
 const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
+const float ROTATION_STEP = 0.1f;
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -56,7 +50,6 @@ void handleMovementKeys(int key);
 void handleScaleKeys(int key);
 
 void prepareFrame();
-void updateObjectsRotation(float frameDelta);
 glm::mat4 buildObjectModelMatrix(const Object3D &object);
 Object3D &getSelectedObject();
 
@@ -134,37 +127,29 @@ int main()
 										 cubeVertexCount,
 
 										 glm::vec3(-0.5f, -0.5f, 0.0f),
-										 0.4f,
-
-										 false, false, false,
-										 0, 0, 0});
+										 glm::vec3(0.4f),
+										 glm::vec3(0.0f)});
 
 	objects.push_back({suzanneVAO,
 										 suzanneVertexCount,
 
 										 glm::vec3(0.5f, -0.5f, 0.0f),
-										 0.4f,
-
-										 false, false, false,
-										 0, 0, 0});
+										 glm::vec3(0.4f),
+										 glm::vec3(0.0f)});
 
 	objects.push_back({suzanneVAO,
 										 suzanneVertexCount,
 
 										 glm::vec3(-0.5f, 0.5f, 0.0f),
-										 0.4f,
-
-										 false, false, false,
-										 0, 0, 0});
+										 glm::vec3(0.4f),
+										 glm::vec3(0.0f)});
 
 	objects.push_back({cubeVAO,
 										 cubeVertexCount,
 
 										 glm::vec3(0.5f, 0.5f, 0.0f),
-										 0.4f,
-
-										 false, false, false,
-										 0, 0, 0});
+										 glm::vec3(0.4f),
+										 glm::vec3(0.0f)});
 
 	glUseProgram(shaderID);
 
@@ -183,7 +168,6 @@ int main()
 		previousFrameTime = frameTime;
 
 		glfwPollEvents();
-		updateObjectsRotation(frameDelta);
 
 		prepareFrame();
 
@@ -217,49 +201,17 @@ Object3D &getSelectedObject()
 	return objects[selectedObjectIndex];
 }
 
-void updateObjectsRotation(float frameDelta)
-{
-	const float ROTATION_FACTOR = 1.0f;
-
-	for (Object3D &object : objects)
-	{
-		if (object.rotateX)
-			object.angleX += ROTATION_FACTOR * frameDelta;
-
-		if (object.rotateY)
-			object.angleY += ROTATION_FACTOR * frameDelta;
-
-		if (object.rotateZ)
-			object.angleZ += ROTATION_FACTOR * frameDelta;
-	}
-}
-
 glm::mat4 buildObjectModelMatrix(const Object3D &object)
 {
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 
-	modelMatrix = glm::translate(
-			modelMatrix,
-			object.position);
+	modelMatrix = glm::translate(modelMatrix, object.position);
 
-	modelMatrix = glm::scale(
-			modelMatrix,
-			glm::vec3(object.scale));
+	modelMatrix = glm::scale(modelMatrix, object.scale);
 
-	modelMatrix = glm::rotate(
-			modelMatrix,
-			object.angleX,
-			glm::vec3(1.0f, 0.0f, 0.0f));
-
-	modelMatrix = glm::rotate(
-			modelMatrix,
-			object.angleY,
-			glm::vec3(0.0f, 1.0f, 0.0f));
-
-	modelMatrix = glm::rotate(
-			modelMatrix,
-			object.angleZ,
-			glm::vec3(0.0f, 0.0f, 1.0f));
+	modelMatrix = glm::rotate(modelMatrix, object.rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, object.rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, object.rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	return modelMatrix;
 }
@@ -309,13 +261,11 @@ void handleRotationKeys(int key)
 	Object3D &object = getSelectedObject();
 
 	if (key == GLFW_KEY_X)
-		object.rotateX = !object.rotateX;
-
-	if (key == GLFW_KEY_Y)
-		object.rotateY = !object.rotateY;
-
-	if (key == GLFW_KEY_Z)
-		object.rotateZ = !object.rotateZ;
+		object.rotation.x += ROTATION_STEP;
+	else if (key == GLFW_KEY_Y)
+		object.rotation.y += ROTATION_STEP;
+	else if (key == GLFW_KEY_Z)
+		object.rotation.z += ROTATION_STEP;
 }
 
 void handleMovementKeys(int key)
@@ -324,20 +274,16 @@ void handleMovementKeys(int key)
 
 	if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT)
 		object.position.x -= MOVEMENT_STEP;
-
-	if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT)
+	else if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT)
 		object.position.x += MOVEMENT_STEP;
-
 	if (key == GLFW_KEY_I || key == GLFW_KEY_UP)
 		object.position.y += MOVEMENT_STEP;
-
-	if (key == GLFW_KEY_J || key == GLFW_KEY_DOWN)
+	else if (key == GLFW_KEY_J || key == GLFW_KEY_DOWN)
 		object.position.y -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_W)
 		object.position.z -= MOVEMENT_STEP;
-
-	if (key == GLFW_KEY_S)
+	else if (key == GLFW_KEY_S)
 		object.position.z += MOVEMENT_STEP;
 }
 
@@ -345,11 +291,18 @@ void handleScaleKeys(int key)
 {
 	Object3D &object = getSelectedObject();
 
-	if (key == GLFW_KEY_LEFT_BRACKET && object.scale > 0.2f)
-		object.scale -= SCALE_STEP;
-
-	if (key == GLFW_KEY_RIGHT_BRACKET && object.scale < 1.2f)
-		object.scale += SCALE_STEP;
+	if (key == GLFW_KEY_LEFT_BRACKET)
+	{
+		object.scale.x = glm::max(object.scale.x - SCALE_STEP, 0.2f);
+		object.scale.y = glm::max(object.scale.y - SCALE_STEP, 0.2f);
+		object.scale.z = glm::max(object.scale.z - SCALE_STEP, 0.2f);
+	}
+	else if (key == GLFW_KEY_RIGHT_BRACKET)
+	{
+		object.scale.x = glm::min(object.scale.x + SCALE_STEP, 1.2f);
+		object.scale.y = glm::min(object.scale.y + SCALE_STEP, 1.2f);
+		object.scale.z = glm::min(object.scale.z + SCALE_STEP, 1.2f);
+	}
 }
 
 int setupShader()
