@@ -137,8 +137,8 @@ int main()
 	glViewport(0, 0, width, height);
 
 	GLuint shaderID = setupShader();
-	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Cube.obj", nVertices);
-	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Cube.mtl");
+	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Suzanne.obj", nVertices);
+	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Suzanne.mtl");
 	GLuint textureID = loadTexture("../assets/Modelos3D/" + textureName);
 
 	glUseProgram(shaderID);
