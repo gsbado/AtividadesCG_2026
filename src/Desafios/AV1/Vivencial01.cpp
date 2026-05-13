@@ -24,6 +24,9 @@ using namespace std;
 // ---- STRUCTS ----
 struct Object3D
 {
+	GLuint VAO;
+	int vertexCount;
+
 	glm::vec3 position;
 	float scale;
 
@@ -37,24 +40,7 @@ struct Object3D
 };
 
 // ---- VARIÁVEIS GLOBAIS ----
-vector<Object3D> objects = {
-		{glm::vec3(-0.5f, -0.5f, 0.0f),
-		 0.4f,
-		 false, false, false,
-		 0.0f, 0.0f, 0.0f},
-		{glm::vec3(0.5f, -0.5f, 0.0f),
-		 0.4f,
-		 false, false, false,
-		 0.0f, 0.0f, 0.0f},
-		{glm::vec3(-0.5f, 0.5f, 0.0f),
-		 0.4f,
-		 false, false, false,
-		 0.0f, 0.0f, 0.0f},
-		{glm::vec3(0.5f, 0.5f, 0.0f),
-		 0.4f,
-		 false, false, false,
-		 0.0f, 0.0f, 0.0f}};
-
+vector<Object3D> objects;
 int selectedObjectIndex = 0;
 int nVertices = 0;
 
@@ -78,7 +64,6 @@ void showControlsGuide();
 
 void renderObject(
 		const Object3D &object,
-		GLuint objectVAO,
 		GLint modelMatrixLocation);
 
 int setupShader();
@@ -132,7 +117,54 @@ int main()
 	glViewport(0, 0, width, height);
 
 	GLuint shaderID = setupShader();
-	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Suzanne.obj", nVertices);
+	GLuint cubeVAO = loadSimpleOBJ(
+			"../assets/Modelos3D/Cube.obj",
+			nVertices);
+
+	int cubeVertexCount = nVertices;
+
+	GLuint suzanneVAO = loadSimpleOBJ(
+			"../assets/Modelos3D/Suzanne/Suzanne.obj",
+			nVertices);
+
+	int suzanneVertexCount = nVertices;
+
+	// ---- Instâncias dos objetos ----
+	objects.push_back({cubeVAO,
+										 cubeVertexCount,
+
+										 glm::vec3(-0.5f, -0.5f, 0.0f),
+										 0.4f,
+
+										 false, false, false,
+										 0, 0, 0});
+
+	objects.push_back({suzanneVAO,
+										 suzanneVertexCount,
+
+										 glm::vec3(0.5f, -0.5f, 0.0f),
+										 0.4f,
+
+										 false, false, false,
+										 0, 0, 0});
+
+	objects.push_back({suzanneVAO,
+										 suzanneVertexCount,
+
+										 glm::vec3(-0.5f, 0.5f, 0.0f),
+										 0.4f,
+
+										 false, false, false,
+										 0, 0, 0});
+
+	objects.push_back({cubeVAO,
+										 cubeVertexCount,
+
+										 glm::vec3(0.5f, 0.5f, 0.0f),
+										 0.4f,
+
+										 false, false, false,
+										 0, 0, 0});
 
 	glUseProgram(shaderID);
 
@@ -159,14 +191,14 @@ int main()
 		{
 			renderObject(
 					object,
-					VAO,
 					modelMatrixLocation);
 		}
 
 		glfwSwapBuffers(window);
 	}
 
-	glDeleteVertexArrays(1, &VAO);
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &suzanneVAO);
 
 	glfwTerminate();
 	return 0;
@@ -232,7 +264,7 @@ glm::mat4 buildObjectModelMatrix(const Object3D &object)
 	return modelMatrix;
 }
 
-void renderObject(const Object3D &object, GLuint objectVAO, GLint modelMatrixLocation)
+void renderObject(const Object3D &object, GLint modelMatrixLocation)
 {
 	glm::mat4 modelMatrix = buildObjectModelMatrix(object);
 
@@ -242,8 +274,8 @@ void renderObject(const Object3D &object, GLuint objectVAO, GLint modelMatrixLoc
 			GL_FALSE,
 			glm::value_ptr(modelMatrix));
 
-	glBindVertexArray(objectVAO);
-	glDrawArrays(GL_TRIANGLES, 0, nVertices);
+	glBindVertexArray(object.VAO);
+	glDrawArrays(GL_TRIANGLES, 0, object.vertexCount);
 	glBindVertexArray(0);
 }
 
