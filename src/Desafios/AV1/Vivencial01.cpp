@@ -8,10 +8,7 @@
 
 // ---- HEADERS GLFW, GLAD, GLM ----
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <string>
-#include <assert.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -68,7 +65,6 @@ const GLchar *vertexShaderSource = "#version 450\n"
 																	 "layout (location = 1) in vec3 color;\n"
 																	 "uniform mat4 model;\n"
 																	 "out vec3 finalColor;\n"
-																	 "out vec2 fragTexCoord;\n"
 																	 "void main()\n"
 																	 "{\n"
 																	 "   gl_Position = model * vec4(position, 1.0);\n"
@@ -159,14 +155,8 @@ int main()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	float previousFrameTime = (float)glfwGetTime();
-
 	while (!glfwWindowShouldClose(window))
 	{
-		float frameTime = (float)glfwGetTime();
-		float frameDelta = frameTime - previousFrameTime;
-		previousFrameTime = frameTime;
-
 		glfwPollEvents();
 
 		prepareFrame();
