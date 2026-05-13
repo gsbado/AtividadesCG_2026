@@ -24,7 +24,7 @@
 using namespace std;
 
 // ---- STRUCTS ----
-struct Cube
+struct Object3D
 {
 	glm::vec3 position;
 	float scale;
@@ -39,7 +39,7 @@ struct Cube
 };
 
 // ---- VARIÁVEIS GLOBAIS ----
-vector<Cube> cubes = {
+vector<Object3D> objects = {
 		{glm::vec3(-0.5f, -0.5f, 0.0f),
 		 0.4f,
 		 false, false, false,
@@ -57,7 +57,7 @@ vector<Cube> cubes = {
 		 false, false, false,
 		 0.0f, 0.0f, 0.0f}};
 
-int selectedCubeIndex = 0;
+int selectedObjectIndex = 0;
 int nVertices = 0;
 
 const GLuint WIDTH = 1000, HEIGHT = 1000;
@@ -72,15 +72,15 @@ void handleMovementKeys(int key);
 void handleScaleKeys(int key);
 
 void prepareFrame();
-void updateCubesRotation(float frameDelta);
-glm::mat4 buildCubeModelMatrix(const Cube &cube);
-Cube &getSelectedCube();
+void updateObjectsRotation(float frameDelta);
+glm::mat4 buildObjectModelMatrix(const Object3D &object);
+Object3D &getSelectedObject();
 
 void showControlsGuide();
 
-void renderCube(
-		const Cube &cube,
-		GLuint cubeVAO,
+void renderObject(
+		const Object3D &object,
+		GLuint objectVAO,
 		GLint modelMatrixLocation);
 
 int setupShader();
@@ -159,17 +159,17 @@ int main()
 		previousFrameTime = frameTime;
 
 		glfwPollEvents();
-		updateCubesRotation(frameDelta);
+		updateObjectsRotation(frameDelta);
 
 		prepareFrame();
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID);
 
-		for (const Cube &cube : cubes)
+		for (const Object3D &object : objects)
 		{
-			renderCube(
-					cube,
+			renderObject(
+					object,
 					VAO,
 					modelMatrixLocation);
 		}
@@ -264,61 +264,61 @@ void prepareFrame()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-Cube &getSelectedCube()
+Object3D &getSelectedObject()
 {
-	return cubes[selectedCubeIndex];
+	return objects[selectedObjectIndex];
 }
 
-void updateCubesRotation(float frameDelta)
+void updateObjectsRotation(float frameDelta)
 {
 	const float ROTATION_FACTOR = 1.0f;
 
-	for (Cube &cube : cubes)
+	for (Object3D &object : objects)
 	{
-		if (cube.rotateX)
-			cube.angleX += ROTATION_FACTOR * frameDelta;
+		if (object.rotateX)
+			object.angleX += ROTATION_FACTOR * frameDelta;
 
-		if (cube.rotateY)
-			cube.angleY += ROTATION_FACTOR * frameDelta;
+		if (object.rotateY)
+			object.angleY += ROTATION_FACTOR * frameDelta;
 
-		if (cube.rotateZ)
-			cube.angleZ += ROTATION_FACTOR * frameDelta;
+		if (object.rotateZ)
+			object.angleZ += ROTATION_FACTOR * frameDelta;
 	}
 }
 
-glm::mat4 buildCubeModelMatrix(const Cube &cube)
+glm::mat4 buildObjectModelMatrix(const Object3D &object)
 {
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 
 	modelMatrix = glm::translate(
 			modelMatrix,
-			cube.position);
+			object.position);
 
 	modelMatrix = glm::scale(
 			modelMatrix,
-			glm::vec3(cube.scale));
+			glm::vec3(object.scale));
 
 	modelMatrix = glm::rotate(
 			modelMatrix,
-			cube.angleX,
+			object.angleX,
 			glm::vec3(1.0f, 0.0f, 0.0f));
 
 	modelMatrix = glm::rotate(
 			modelMatrix,
-			cube.angleY,
+			object.angleY,
 			glm::vec3(0.0f, 1.0f, 0.0f));
 
 	modelMatrix = glm::rotate(
 			modelMatrix,
-			cube.angleZ,
+			object.angleZ,
 			glm::vec3(0.0f, 0.0f, 1.0f));
 
 	return modelMatrix;
 }
 
-void renderCube(const Cube &cube, GLuint cubeVAO, GLint modelMatrixLocation)
+void renderObject(const Object3D &object, GLuint objectVAO, GLint modelMatrixLocation)
 {
-	glm::mat4 modelMatrix = buildCubeModelMatrix(cube);
+	glm::mat4 modelMatrix = buildObjectModelMatrix(object);
 
 	glUniformMatrix4fv(
 			modelMatrixLocation,
@@ -326,7 +326,7 @@ void renderCube(const Cube &cube, GLuint cubeVAO, GLint modelMatrixLocation)
 			GL_FALSE,
 			glm::value_ptr(modelMatrix));
 
-	glBindVertexArray(cubeVAO);
+	glBindVertexArray(objectVAO);
 	glDrawArrays(GL_TRIANGLES, 0, nVertices);
 	glBindVertexArray(0);
 }
@@ -341,11 +341,11 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_TAB)
 	{
-		selectedCubeIndex =
-				(selectedCubeIndex + 1) % cubes.size();
+		selectedObjectIndex =
+				(selectedObjectIndex + 1) % objects.size();
 
-		cout << "Cube selected: "
-				 << selectedCubeIndex + 1
+		cout << "Object selected: "
+				 << selectedObjectIndex + 1
 				 << endl;
 
 		return;
@@ -358,50 +358,50 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 void handleRotationKeys(int key)
 {
-	Cube &cube = getSelectedCube();
+	Object3D &object = getSelectedObject();
 
 	if (key == GLFW_KEY_X)
-		cube.rotateX = !cube.rotateX;
+		object.rotateX = !object.rotateX;
 
 	if (key == GLFW_KEY_Y)
-		cube.rotateY = !cube.rotateY;
+		object.rotateY = !object.rotateY;
 
 	if (key == GLFW_KEY_Z)
-		cube.rotateZ = !cube.rotateZ;
+		object.rotateZ = !object.rotateZ;
 }
 
 void handleMovementKeys(int key)
 {
-	Cube &cube = getSelectedCube();
+	Object3D &object = getSelectedObject();
 
 	if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT)
-		cube.position.x -= MOVEMENT_STEP;
+		object.position.x -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT)
-		cube.position.x += MOVEMENT_STEP;
+		object.position.x += MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_I || key == GLFW_KEY_UP)
-		cube.position.y += MOVEMENT_STEP;
+		object.position.y += MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_J || key == GLFW_KEY_DOWN)
-		cube.position.y -= MOVEMENT_STEP;
+		object.position.y -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_W)
-		cube.position.z -= MOVEMENT_STEP;
+		object.position.z -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_S)
-		cube.position.z += MOVEMENT_STEP;
+		object.position.z += MOVEMENT_STEP;
 }
 
 void handleScaleKeys(int key)
 {
-	Cube &cube = getSelectedCube();
+	Object3D &object = getSelectedObject();
 
-	if (key == GLFW_KEY_LEFT_BRACKET && cube.scale > 0.2f)
-		cube.scale -= SCALE_STEP;
+	if (key == GLFW_KEY_LEFT_BRACKET && object.scale > 0.2f)
+		object.scale -= SCALE_STEP;
 
-	if (key == GLFW_KEY_RIGHT_BRACKET && cube.scale < 1.2f)
-		cube.scale += SCALE_STEP;
+	if (key == GLFW_KEY_RIGHT_BRACKET && object.scale < 1.2f)
+		object.scale += SCALE_STEP;
 }
 
 int setupShader()
@@ -456,9 +456,9 @@ void showControlsGuide()
 	cout << endl;
 	cout << "==========================================" << endl;
 	cout << " Bem-vindo ao programa da Atividade Vivencial 01 " << endl;
-	cout << " Controle seu cubo utilizando as seguintes teclas:" << endl;
+	cout << " Controle seu objeto utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
-	cout << " Selecionar : TAB (troca cubo ativo)" << endl;
+	cout << " Selecionar : TAB (troca objeto ativo)" << endl;
 	cout << " Movimento X : A | D  ou  <- | ->" << endl;
 	cout << " Movimento Y : I | J  ou  /\\ | \\/" << endl;
 	cout << " Movimento Z : W | S" << endl;
