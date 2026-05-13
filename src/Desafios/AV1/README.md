@@ -47,8 +47,10 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ## 🖥️ Preview
 
+![Vivencial01](../../../assets/demos/Vivencial01_2.png)
+
 ![Vivencial01](../../../assets/demos/Vivencial01.png)
-> Exemplo da interface do projeto com múltiplos objetos 3D
+> Exemplos da interface do projeto com múltiplos objetos 3D
 
 ## 📌 Observações Finais
 - Os shaders são básicos (sem texturas ou iluminação) para foco nas transformações geométricas.
