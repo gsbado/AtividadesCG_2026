@@ -64,10 +64,11 @@ const GLchar *vertexShaderSource = "#version 450\n"
 																	 "layout (location = 0) in vec3 position;\n"
 																	 "layout (location = 1) in vec3 color;\n"
 																	 "uniform mat4 model;\n"
+																	 "uniform mat4 projection;\n"
 																	 "out vec3 finalColor;\n"
 																	 "void main()\n"
 																	 "{\n"
-																	 "   gl_Position = model * vec4(position, 1.0);\n"
+																	 "   gl_Position = projection * model * vec4(position, 1.0);\n"
 																	 "   finalColor = color;\n"
 																	 "}\0";
 
@@ -150,6 +151,19 @@ int main()
 	glUseProgram(shaderID);
 
 	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
+	GLint projectionMatrixLocation = glGetUniformLocation(shaderID, "projection");
+
+	glm::mat4 projectionMatrix =
+			glm::ortho(
+					-1.2f, 1.2f,
+					-1.2f, 1.2f,
+					-1.2f, 1.2f);
+
+	glUniformMatrix4fv(
+			projectionMatrixLocation,
+			1,
+			GL_FALSE,
+			glm::value_ptr(projectionMatrix));
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
