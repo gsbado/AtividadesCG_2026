@@ -50,6 +50,8 @@ set(EXERCISES
     CuboIluminacao
     HelloSquares3D
     HelloTextures3D
+    Vivencial01
+    HelloIlumination3D
 )
 
 add_compile_options(-Wno-pragmas)
@@ -81,6 +83,10 @@ foreach(EXERCISE ${EXERCISES})
         add_executable(${EXERCISE} src/Desafios/M2/${EXERCISE}.cpp ${GLAD_C_FILE})
     elseif(${EXERCISE} STREQUAL "HelloTextures3D")
         add_executable(${EXERCISE} src/Desafios/M3/${EXERCISE}.cpp "Code snippets/LoadSimpleOBJ.cpp" ${GLAD_C_FILE})
+    elseif(${EXERCISE} STREQUAL "Vivencial01")
+        add_executable(${EXERCISE} src/Desafios/AV1/${EXERCISE}.cpp "Code snippets/LoadSimpleOBJ.cpp" ${GLAD_C_FILE})
+    elseif(${EXERCISE} STREQUAL "HelloIlumination3D")
+        add_executable(${EXERCISE} src/Desafios/M4/${EXERCISE}.cpp "Code snippets/LoadSimpleOBJ.cpp" ${GLAD_C_FILE})
     else()
         add_executable(${EXERCISE} src/${EXERCISE}.cpp ${GLAD_C_FILE})
     endif()
