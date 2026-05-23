@@ -1,9 +1,9 @@
-/* Hello Textures 3D - código adaptado de HelloSquares3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
+/* Vivencial02 - código adaptado de HelloTextures3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
  *
  * Modificado por Gabriela Spanemberg Bado
  * para a disciplina de Computação Gráfica - Unisinos
  * Versão inicial: 7/4/2017
- * Última atualização em 07/05/2026
+ * Última atualização em 23/05/2026
  */
 
 // ---- HEADERS GLFW, GLAD, GLM ----
@@ -455,7 +455,7 @@ void showControlsGuide()
 {
 	cout << endl;
 	cout << "==========================================" << endl;
-	cout << " Bem-vindo ao Hello Textures 3D! " << endl;
+	cout << " Bem-vindo a Atividade Vivencial 02 " << endl;
 	cout << " Controle seu cubo utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
 	cout << " Selecionar : TAB (troca cubo ativo)" << endl;
