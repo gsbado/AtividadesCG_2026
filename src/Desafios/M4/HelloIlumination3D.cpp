@@ -3,7 +3,7 @@
  * Modificado por Gabriela Spanemberg Bado
  * para a disciplina de Computação Gráfica - Unisinos
  * Versão inicial: 7/4/2017
- * Última atualização em 07/05/2026
+ * Última atualização em 28/05/2026
  */
 
 // ---- HEADERS GLFW, GLAD, GLM ----
@@ -29,6 +29,13 @@ struct Cube
 	glm::vec3 position;
 	glm::vec3 scale;
 	glm::vec3 rotation;
+};
+
+struct Material
+{
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
 };
 
 // ---- VARIÁVEIS GLOBAIS ----
@@ -77,6 +84,8 @@ string loadTexturePathFromMTL(const string &mtlPath);
 GLuint loadTexture(const string &texturePath);
 GLuint loadSimpleOBJ(string filePath, int &nVertices);
 
+Material loadMaterialFromMTL(const string &mtlPath);
+
 // ---- SHADERS ----
 const GLchar *vertexShaderSource = "#version 450\n"
 																	 "layout (location = 0) in vec3 position;\n"
@@ -98,6 +107,9 @@ const GLchar *fragmentShaderSource = "#version 450\n"
 																		 "in vec3 fragNormal;\n"
 																		 "out vec4 color;\n"
 																		 "uniform sampler2D texture1;\n"
+																		 "uniform vec3 materialAmbient;\n"
+																		 "uniform vec3 materialDiffuse;\n"
+																		 "uniform vec3 materialSpecular;\n"
 																		 "void main()\n"
 																		 "{\n"
 																		 "   color = texture(texture1, fragTexCoord);\n"
@@ -133,8 +145,24 @@ int main()
 	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Cube.obj", nVertices);
 	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Cube.mtl");
 	GLuint textureID = loadTexture("../assets/Modelos3D/" + textureName);
+	Material material = loadMaterialFromMTL("../assets/Modelos3D/Cube.mtl");
 
 	glUseProgram(shaderID);
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "materialAmbient"),
+			1,
+			glm::value_ptr(material.ambient));
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "materialDiffuse"),
+			1,
+			glm::value_ptr(material.diffuse));
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "materialSpecular"),
+			1,
+			glm::value_ptr(material.specular));
 
 	glUniform1i(glGetUniformLocation(shaderID, "texture1"), 0);
 	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
@@ -198,6 +226,47 @@ string loadTexturePathFromMTL(const string &mtlPath)
 	}
 
 	return "";
+}
+
+Material loadMaterialFromMTL(const string &mtlPath)
+{
+	Material material = {
+			glm::vec3(0.0f),
+			glm::vec3(0.0f),
+			glm::vec3(0.0f)};
+
+	ifstream file(mtlPath);
+
+	if (!file.is_open())
+	{
+		cout << "Erro ao abrir MTL" << endl;
+		return material;
+	}
+
+	string line;
+
+	while (getline(file, line))
+	{
+		istringstream ss(line);
+
+		string word;
+		ss >> word;
+
+		if (word == "Ka")
+		{
+			ss >> material.ambient.r >> material.ambient.g >> material.ambient.b;
+		}
+		else if (word == "Kd")
+		{
+			ss >> material.diffuse.r >> material.diffuse.g >> material.diffuse.b;
+		}
+		else if (word == "Ks")
+		{
+			ss >> material.specular.r >> material.specular.g >> material.specular.b;
+		}
+	}
+
+	return material;
 }
 
 GLuint loadTexture(
