@@ -27,35 +27,24 @@ using namespace std;
 struct Cube
 {
 	glm::vec3 position;
-	float scale;
-
-	bool rotateX;
-	bool rotateY;
-	bool rotateZ;
-
-	float angleX;
-	float angleY;
-	float angleZ;
+	glm::vec3 scale;
+	glm::vec3 rotation;
 };
 
 // ---- VARIÁVEIS GLOBAIS ----
 vector<Cube> cubes = {
 		{glm::vec3(-0.5f, -0.5f, 0.0f),
-		 0.4f,
-		 false, false, false,
-		 0.0f, 0.0f, 0.0f},
+		 glm::vec3(0.4f),
+		 glm::vec3(0.0f)},
 		{glm::vec3(0.5f, -0.5f, 0.0f),
-		 0.4f,
-		 false, false, false,
-		 0.0f, 0.0f, 0.0f},
+		 glm::vec3(0.4f),
+		 glm::vec3(0.0f)},
 		{glm::vec3(-0.5f, 0.5f, 0.0f),
-		 0.4f,
-		 false, false, false,
-		 0.0f, 0.0f, 0.0f},
+		 glm::vec3(0.4f),
+		 glm::vec3(0.0f)},
 		{glm::vec3(0.5f, 0.5f, 0.0f),
-		 0.4f,
-		 false, false, false,
-		 0.0f, 0.0f, 0.0f}};
+		 glm::vec3(0.4f),
+		 glm::vec3(0.0f)}};
 
 int selectedCubeIndex = 0;
 int nVertices = 0;
@@ -63,6 +52,7 @@ int nVertices = 0;
 const GLuint WIDTH = 1000, HEIGHT = 1000;
 const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
+const float ROTATION_STEP = 0.1f;
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -72,7 +62,6 @@ void handleMovementKeys(int key);
 void handleScaleKeys(int key);
 
 void prepareFrame();
-void updateCubesRotation(float frameDelta);
 glm::mat4 buildCubeModelMatrix(const Cube &cube);
 Cube &getSelectedCube();
 
@@ -150,16 +139,9 @@ int main()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	float previousFrameTime = (float)glfwGetTime();
-
 	while (!glfwWindowShouldClose(window))
 	{
-		float frameTime = (float)glfwGetTime();
-		float frameDelta = frameTime - previousFrameTime;
-		previousFrameTime = frameTime;
-
 		glfwPollEvents();
-		updateCubesRotation(frameDelta);
 
 		prepareFrame();
 
@@ -269,23 +251,6 @@ Cube &getSelectedCube()
 	return cubes[selectedCubeIndex];
 }
 
-void updateCubesRotation(float frameDelta)
-{
-	const float ROTATION_FACTOR = 1.0f;
-
-	for (Cube &cube : cubes)
-	{
-		if (cube.rotateX)
-			cube.angleX += ROTATION_FACTOR * frameDelta;
-
-		if (cube.rotateY)
-			cube.angleY += ROTATION_FACTOR * frameDelta;
-
-		if (cube.rotateZ)
-			cube.angleZ += ROTATION_FACTOR * frameDelta;
-	}
-}
-
 glm::mat4 buildCubeModelMatrix(const Cube &cube)
 {
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
@@ -296,21 +261,21 @@ glm::mat4 buildCubeModelMatrix(const Cube &cube)
 
 	modelMatrix = glm::scale(
 			modelMatrix,
-			glm::vec3(cube.scale));
+			cube.scale);
 
 	modelMatrix = glm::rotate(
 			modelMatrix,
-			cube.angleX,
+			cube.rotation.x,
 			glm::vec3(1.0f, 0.0f, 0.0f));
 
 	modelMatrix = glm::rotate(
 			modelMatrix,
-			cube.angleY,
+			cube.rotation.y,
 			glm::vec3(0.0f, 1.0f, 0.0f));
 
 	modelMatrix = glm::rotate(
 			modelMatrix,
-			cube.angleZ,
+			cube.rotation.z,
 			glm::vec3(0.0f, 0.0f, 1.0f));
 
 	return modelMatrix;
@@ -361,13 +326,13 @@ void handleRotationKeys(int key)
 	Cube &cube = getSelectedCube();
 
 	if (key == GLFW_KEY_X)
-		cube.rotateX = !cube.rotateX;
+		cube.rotation.x += ROTATION_STEP;
 
 	if (key == GLFW_KEY_Y)
-		cube.rotateY = !cube.rotateY;
+		cube.rotation.y += ROTATION_STEP;
 
 	if (key == GLFW_KEY_Z)
-		cube.rotateZ = !cube.rotateZ;
+		cube.rotation.z += ROTATION_STEP;
 }
 
 void handleMovementKeys(int key)
@@ -397,11 +362,19 @@ void handleScaleKeys(int key)
 {
 	Cube &cube = getSelectedCube();
 
-	if (key == GLFW_KEY_LEFT_BRACKET && cube.scale > 0.2f)
-		cube.scale -= SCALE_STEP;
+	if (key == GLFW_KEY_LEFT_BRACKET)
+	{
+		cube.scale.x = glm::max(cube.scale.x - SCALE_STEP, 0.2f);
+		cube.scale.y = glm::max(cube.scale.y - SCALE_STEP, 0.2f);
+		cube.scale.z = glm::max(cube.scale.z - SCALE_STEP, 0.2f);
+	}
 
-	if (key == GLFW_KEY_RIGHT_BRACKET && cube.scale < 1.2f)
-		cube.scale += SCALE_STEP;
+	if (key == GLFW_KEY_RIGHT_BRACKET)
+	{
+		cube.scale.x = glm::min(cube.scale.x + SCALE_STEP, 1.2f);
+		cube.scale.y = glm::min(cube.scale.y + SCALE_STEP, 1.2f);
+		cube.scale.z = glm::min(cube.scale.z + SCALE_STEP, 1.2f);
+	}
 }
 
 int setupShader()
