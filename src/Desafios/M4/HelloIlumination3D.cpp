@@ -93,15 +93,18 @@ const GLchar *vertexShaderSource = "#version 450\n"
 																	 "layout (location = 2) in vec2 texCoord;\n"
 																	 "layout (location = 3) in vec3 normal;\n"
 																	 "uniform mat4 model;\n"
+																	 "uniform mat4 view;\n"
+																	 "uniform mat4 projection;\n"
 																	 "out vec2 fragTexCoord;\n"
 																	 "out vec3 fragNormal;\n"
 																	 "out vec3 fragPosition;\n"
 																	 "void main()\n"
 																	 "{\n"
-																	 "   gl_Position = model * vec4(position, 1.0);\n"
+																	 "   vec4 worldPos = model * vec4(position, 1.0);\n"
+																	 "   gl_Position = projection * view * worldPos;\n"
 																	 "   fragTexCoord = texCoord;\n"
 																	 "   fragNormal = normalize(mat3(transpose(inverse(model))) * normal);\n"
-																	 "   fragPosition = vec3(model * vec4(position, 1.0));\n"
+																	 "   fragPosition = vec3(worldPos);\n"
 																	 "}\0";
 
 const GLchar *fragmentShaderSource = "#version 450\n"
@@ -164,6 +167,8 @@ int main()
 
 	glUseProgram(shaderID);
 
+	glm::vec3 cameraPosition(0.0f, 2.0f, 3.0f);
+
 	glUniform3fv(
 			glGetUniformLocation(shaderID, "materialAmbient"),
 			1,
@@ -185,14 +190,28 @@ int main()
 			2.0f,
 			2.0f);
 
-	glUniform3f(
+	glUniform3fv(
 			glGetUniformLocation(shaderID, "viewPosition"),
-			0.0f,
-			0.0f,
-			5.0f);
+			1,
+			glm::value_ptr(cameraPosition));
 
 	glUniform1i(glGetUniformLocation(shaderID, "texture1"), 0);
 	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
+
+	glm::mat4 view = glm::lookAt(
+			glm::vec3(0.0f, 2.0f, 3.0f),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f));
+	GLint viewLoc = glGetUniformLocation(shaderID, "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+	glm::mat4 projection = glm::perspective(
+			glm::radians(45.0f),
+			(float)WIDTH / (float)HEIGHT,
+			0.1f,
+			100.0f);
+	GLint projectionLoc = glGetUniformLocation(shaderID, "projection");
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
