@@ -24,7 +24,7 @@
 using namespace std;
 
 // ---- STRUCTS ----
-struct Cube
+struct Object3D
 {
 	glm::vec3 position;
 	glm::vec3 scale;
@@ -39,7 +39,7 @@ struct Material
 };
 
 // ---- VARIÁVEIS GLOBAIS ----
-vector<Cube> cubes = {
+vector<Object3D> objects = {
 		{glm::vec3(-0.5f, -0.5f, 0.0f),
 		 glm::vec3(0.4f),
 		 glm::vec3(0.0f)},
@@ -53,7 +53,7 @@ vector<Cube> cubes = {
 		 glm::vec3(0.4f),
 		 glm::vec3(0.0f)}};
 
-int selectedCubeIndex = 0;
+int selectedObjectIndex = 0;
 int nVertices = 0;
 
 const GLuint WIDTH = 1000, HEIGHT = 1000;
@@ -69,14 +69,14 @@ void handleMovementKeys(int key);
 void handleScaleKeys(int key);
 
 void prepareFrame();
-glm::mat4 buildCubeModelMatrix(const Cube &cube);
-Cube &getSelectedCube();
+glm::mat4 buildObject3DModelMatrix(const Object3D &object);
+Object3D &getSelectedObject3D();
 
 void showControlsGuide();
 
-void renderCube(
-		const Cube &cube,
-		GLuint cubeVAO,
+void renderObject3D(
+		const Object3D &object,
+		GLuint objectVAO,
 		GLint modelMatrixLocation);
 
 int setupShader();
@@ -138,7 +138,7 @@ int main()
 {
 	glfwInit();
 
-	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Olá Iluminação 3D -- Gabriela Bado", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Olá Atividade Vivencial 02 -- Gabriela Bado", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	glfwSetKeyCallback(window, key_callback);
@@ -226,17 +226,16 @@ int main()
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID);
 
-		for (const Cube &cube : cubes)
-		{
-			renderCube(
-					cube,
-					VAO,
-					modelMatrixLocation);
-		}
-
-		glfwSwapBuffers(window);
+	for (const Object3D &object : objects)
+	{
+		renderObject3D(
+			object,
+			VAO,
+			modelMatrixLocation);
 	}
 
+	glfwSwapBuffers(window);
+	}
 	glDeleteTextures(1, &textureID);
 	glDeleteVertexArrays(1, &VAO);
 
@@ -365,44 +364,44 @@ void prepareFrame()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-Cube &getSelectedCube()
+Object3D &getSelectedObject3D()
 {
-	return cubes[selectedCubeIndex];
+	return objects[selectedObjectIndex];
 }
 
-glm::mat4 buildCubeModelMatrix(const Cube &cube)
+glm::mat4 buildObject3DModelMatrix(const Object3D &object)
 {
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 
 	modelMatrix = glm::translate(
 			modelMatrix,
-			cube.position);
+			object.position);
 
 	modelMatrix = glm::scale(
 			modelMatrix,
-			cube.scale);
+			object.scale);
 
 	modelMatrix = glm::rotate(
 			modelMatrix,
-			cube.rotation.x,
+			object.rotation.x,
 			glm::vec3(1.0f, 0.0f, 0.0f));
 
 	modelMatrix = glm::rotate(
 			modelMatrix,
-			cube.rotation.y,
+			object.rotation.y,
 			glm::vec3(0.0f, 1.0f, 0.0f));
 
 	modelMatrix = glm::rotate(
 			modelMatrix,
-			cube.rotation.z,
+			object.rotation.z,
 			glm::vec3(0.0f, 0.0f, 1.0f));
 
 	return modelMatrix;
 }
 
-void renderCube(const Cube &cube, GLuint cubeVAO, GLint modelMatrixLocation)
+void renderObject3D(const Object3D &object, GLuint objectVAO, GLint modelMatrixLocation)
 {
-	glm::mat4 modelMatrix = buildCubeModelMatrix(cube);
+	glm::mat4 modelMatrix = buildObject3DModelMatrix(object);
 
 	glUniformMatrix4fv(
 			modelMatrixLocation,
@@ -410,7 +409,7 @@ void renderCube(const Cube &cube, GLuint cubeVAO, GLint modelMatrixLocation)
 			GL_FALSE,
 			glm::value_ptr(modelMatrix));
 
-	glBindVertexArray(cubeVAO);
+	glBindVertexArray(objectVAO);
 	glDrawArrays(GL_TRIANGLES, 0, nVertices);
 	glBindVertexArray(0);
 }
@@ -425,12 +424,12 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_TAB)
 	{
-		selectedCubeIndex =
-				(selectedCubeIndex + 1) % cubes.size();
+		selectedObjectIndex =
+				(selectedObjectIndex + 1) % objects.size();
 
-		cout << "Cube selected: "
-				 << selectedCubeIndex + 1
-				 << endl;
+		cout << "Object3D selected: "
+			 << selectedObjectIndex + 1
+			 << endl;
 
 		return;
 	}
@@ -442,57 +441,57 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 void handleRotationKeys(int key)
 {
-	Cube &cube = getSelectedCube();
+	Object3D &object = getSelectedObject3D();
 
 	if (key == GLFW_KEY_X)
-		cube.rotation.x += ROTATION_STEP;
+		object.rotation.x += ROTATION_STEP;
 
 	if (key == GLFW_KEY_Y)
-		cube.rotation.y += ROTATION_STEP;
+		object.rotation.y += ROTATION_STEP;
 
 	if (key == GLFW_KEY_Z)
-		cube.rotation.z += ROTATION_STEP;
+		object.rotation.z += ROTATION_STEP;
 }
 
 void handleMovementKeys(int key)
 {
-	Cube &cube = getSelectedCube();
+	Object3D &object = getSelectedObject3D();
 
 	if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT)
-		cube.position.x -= MOVEMENT_STEP;
+		object.position.x -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT)
-		cube.position.x += MOVEMENT_STEP;
+		object.position.x += MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_I || key == GLFW_KEY_UP)
-		cube.position.y += MOVEMENT_STEP;
+		object.position.y += MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_J || key == GLFW_KEY_DOWN)
-		cube.position.y -= MOVEMENT_STEP;
+		object.position.y -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_W)
-		cube.position.z -= MOVEMENT_STEP;
+		object.position.z -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_S)
-		cube.position.z += MOVEMENT_STEP;
+		object.position.z += MOVEMENT_STEP;
 }
 
 void handleScaleKeys(int key)
 {
-	Cube &cube = getSelectedCube();
+	Object3D &object = getSelectedObject3D();
 
 	if (key == GLFW_KEY_LEFT_BRACKET)
 	{
-		cube.scale.x = glm::max(cube.scale.x - SCALE_STEP, 0.2f);
-		cube.scale.y = glm::max(cube.scale.y - SCALE_STEP, 0.2f);
-		cube.scale.z = glm::max(cube.scale.z - SCALE_STEP, 0.2f);
+		object.scale.x = glm::max(object.scale.x - SCALE_STEP, 0.2f);
+		object.scale.y = glm::max(object.scale.y - SCALE_STEP, 0.2f);
+		object.scale.z = glm::max(object.scale.z - SCALE_STEP, 0.2f);
 	}
 
 	if (key == GLFW_KEY_RIGHT_BRACKET)
 	{
-		cube.scale.x = glm::min(cube.scale.x + SCALE_STEP, 1.2f);
-		cube.scale.y = glm::min(cube.scale.y + SCALE_STEP, 1.2f);
-		cube.scale.z = glm::min(cube.scale.z + SCALE_STEP, 1.2f);
+		object.scale.x = glm::min(object.scale.x + SCALE_STEP, 1.2f);
+		object.scale.y = glm::min(object.scale.y + SCALE_STEP, 1.2f);
+		object.scale.z = glm::min(object.scale.z + SCALE_STEP, 1.2f);
 	}
 }
 
