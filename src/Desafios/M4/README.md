@@ -1,6 +1,6 @@
-# HelloIlumination3D
+# HelloIllumination3D
 
-Este diretório contém o projeto HelloIlumination3D, desenvolvido para o Módulo 04 da disciplina de Computação Gráfica da Unisinos. O projeto demonstra a aplicação do modelo de iluminação de Phong em objetos 3D carregados a partir de arquivos .OBJ, utilizando materiais definidos em arquivos .MTL, texturização e transformações geométricas interativas.
+Este diretório contém o projeto HelloIllumination3D, desenvolvido para o Módulo 04 da disciplina de Computação Gráfica da Unisinos. O projeto demonstra a aplicação do modelo de iluminação de Phong em objetos 3D carregados a partir de arquivos .OBJ, utilizando materiais definidos em arquivos .MTL, texturização e transformações geométricas interativas.
 
 ## 💡 Descrição
 
@@ -22,7 +22,7 @@ Os dados são enviados para os shaders e utilizados para calcular as componentes
 
 ## 📁 Estrutura
 
-- `src/Desafios/M4/HelloIlumination3D.cpp`
+- `src/Desafios/M4/HelloIllumination3D.cpp`
   - implementa a aplicação principal, incluindo inicialização de GLFW/GLAD, configuração de shaders, carregamento de modelos, leitura de materiais, texturas e renderização.
 - `Code snippets/LoadSimpleOBJ.cpp`
   - contém a função `loadSimpleOBJ(...)` que converte o arquivo `.OBJ` em um VAO para OpenGL.
@@ -38,7 +38,7 @@ Para compilar e rodar este projeto, certifique-se de ter um compilador C++ e as 
 1. Abra o terminal e entre na pasta `build` do projeto: `cd build`
 2. Gere os arquivos de build com o CMake (ou configure seu projeto na IDE).
 3. Compile o projeto (pode utilizar `cmake --build .` no terminal).
-4. Execute o programa gerado (`./HelloIlumination3D`).
+4. Execute o programa gerado (`./HelloIllumination3D`).
 
 Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sistema, se necessário.
 
@@ -54,7 +54,7 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ## 🖥️ Preview
 
-![HelloIlumination3D](../../../assets/demos/HelloIlumination3D.png)
+![HelloIllumination3D](../../../assets/demos/HelloIllumination3D.png)
 > Exemplo da aplicação do modelo de iluminação de Phong com texturização e múltiplas instâncias do modelo Suzanne.
 
 ## 📌 Observações Finais

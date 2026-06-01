@@ -51,7 +51,7 @@ set(EXERCISES
     HelloSquares3D
     HelloTextures3D
     Vivencial01
-    HelloIlumination3D
+    HelloIllumination3D
     Vivencial02
 )
 
@@ -86,7 +86,7 @@ foreach(EXERCISE ${EXERCISES})
         add_executable(${EXERCISE} src/Desafios/M3/${EXERCISE}.cpp "Code snippets/LoadSimpleOBJ.cpp" ${GLAD_C_FILE})
     elseif(${EXERCISE} STREQUAL "Vivencial01")
         add_executable(${EXERCISE} src/Desafios/AV1/${EXERCISE}.cpp "Code snippets/LoadSimpleOBJ.cpp" ${GLAD_C_FILE})
-    elseif(${EXERCISE} STREQUAL "HelloIlumination3D")
+    elseif(${EXERCISE} STREQUAL "HelloIllumination3D")
         add_executable(${EXERCISE} src/Desafios/M4/${EXERCISE}.cpp "Code snippets/LoadSimpleOBJ.cpp" ${GLAD_C_FILE})
     elseif(${EXERCISE} STREQUAL "Vivencial02")
         add_executable(${EXERCISE} src/Desafios/AV2/${EXERCISE}.cpp "Code snippets/LoadSimpleOBJ.cpp" ${GLAD_C_FILE})

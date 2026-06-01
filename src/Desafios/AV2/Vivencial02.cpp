@@ -1,4 +1,4 @@
-/* Vivencial02 - código adaptado de HelloIlumination3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
+/* Vivencial02 - código adaptado de HelloIllumination3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
  *
  * Modificado por Gabriela Spanemberg Bado
  * para a disciplina de Computação Gráfica - Unisinos

@@ -1,4 +1,4 @@
-/* Hello Ilumination 3D - código adaptado de HelloTextures3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
+/* Hello Illumination 3D - código adaptado de HelloTextures3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
  *
  * Modificado por Gabriela Spanemberg Bado
  * para a disciplina de Computação Gráfica - Unisinos
@@ -547,7 +547,7 @@ void showControlsGuide()
 {
 	cout << endl;
 	cout << "==========================================" << endl;
-	cout << " Bem-vindo ao Hello Ilumination 3D! " << endl;
+	cout << " Bem-vindo ao Hello Illumination 3D! " << endl;
 	cout << " Controle seu cubo utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
 	cout << " Selecionar : TAB (troca cubo ativo)" << endl;
