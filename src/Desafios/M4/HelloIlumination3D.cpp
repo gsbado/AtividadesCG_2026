@@ -95,25 +95,40 @@ const GLchar *vertexShaderSource = "#version 450\n"
 																	 "uniform mat4 model;\n"
 																	 "out vec2 fragTexCoord;\n"
 																	 "out vec3 fragNormal;\n"
+																	 "out vec3 fragPosition;\n"
 																	 "void main()\n"
 																	 "{\n"
 																	 "   gl_Position = model * vec4(position, 1.0);\n"
 																	 "   fragTexCoord = texCoord;\n"
-																	 "   fragNormal = normal;\n"
+																	 "   fragNormal = normalize(mat3(transpose(inverse(model))) * normal);\n"
+																	 "   fragPosition = vec3(model * vec4(position, 1.0));\n"
 																	 "}\0";
 
 const GLchar *fragmentShaderSource = "#version 450\n"
 																		 "in vec2 fragTexCoord;\n"
 																		 "in vec3 fragNormal;\n"
+																		 "in vec3 fragPosition;\n"
 																		 "out vec4 color;\n"
 																		 "uniform sampler2D texture1;\n"
 																		 "uniform vec3 materialAmbient;\n"
 																		 "uniform vec3 materialDiffuse;\n"
 																		 "uniform vec3 materialSpecular;\n"
+																		 "uniform vec3 lightPosition;\n"
+																		 "uniform vec3 viewPosition;\n"
 																		 "void main()\n"
 																		 "{\n"
-																		 "   color = texture(texture1, fragTexCoord);\n"
-																		 "}\n\0";
+																		 "vec3 normal = normalize(fragNormal);\n"
+																		 "vec3 lightDirection = normalize(lightPosition - fragPosition);\n"
+																		 "vec3 viewDirection = normalize(viewPosition - fragPosition);\n"
+																		 "vec3 reflectionDirection = reflect(-lightDirection, normal);\n"
+																		 "vec3 ambient = materialAmbient;\n"
+																		 "float diffuseIntensity = max(dot(normal, lightDirection), 0.0);\n"
+																		 "vec3 diffuse = materialDiffuse * diffuseIntensity;\n"
+																		 "float specularIntensity = pow(max(dot(viewDirection, reflectionDirection), 0.0),32.0);\n"
+																		 "vec3 specular = materialSpecular * specularIntensity;\n"
+																		 "vec3 phong = ambient + diffuse + specular;\n"
+																		 "vec4 textureColor = texture(texture1, fragTexCoord);\n"
+																		 "color = vec4(phong, 1.0) * textureColor;\n}\n\0";
 
 // ---- FUNÇÃO MAIN ----
 int main()
@@ -163,6 +178,18 @@ int main()
 			glGetUniformLocation(shaderID, "materialSpecular"),
 			1,
 			glm::value_ptr(material.specular));
+
+	glUniform3f(
+			glGetUniformLocation(shaderID, "lightPosition"),
+			2.0f,
+			2.0f,
+			2.0f);
+
+	glUniform3f(
+			glGetUniformLocation(shaderID, "viewPosition"),
+			0.0f,
+			0.0f,
+			5.0f);
 
 	glUniform1i(glGetUniformLocation(shaderID, "texture1"), 0);
 	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
