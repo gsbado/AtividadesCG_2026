@@ -342,7 +342,7 @@ GLuint loadTexture(
 
 void prepareFrame()
 {
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
