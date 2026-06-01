@@ -54,7 +54,7 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ## 🖥️ Preview
 
-![Vivencial01](../../../assets/demos/Vivencial01.png)
+![HelloIlumination3D](../../../assets/demos/HelloIlumination3D.png)
 > Exemplo da aplicação do modelo de iluminação de Phong com texturização e múltiplas instâncias do modelo Suzanne.
 
 ## 📌 Observações Finais
