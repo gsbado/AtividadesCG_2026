@@ -1,9 +1,9 @@
-/* Vivencial02 - código adaptado de HelloTextures3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
+/* Vivencial02 - código adaptado de HelloIlumination3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
  *
  * Modificado por Gabriela Spanemberg Bado
  * para a disciplina de Computação Gráfica - Unisinos
  * Versão inicial: 7/4/2017
- * Última atualização em 23/05/2026
+ * Última atualização em 30/05/2026
  */
 
 // ---- HEADERS GLFW, GLAD, GLM ----
@@ -29,6 +29,13 @@ struct Cube
 	glm::vec3 position;
 	glm::vec3 scale;
 	glm::vec3 rotation;
+};
+
+struct Material
+{
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
 };
 
 // ---- VARIÁVEIS GLOBAIS ----
@@ -77,34 +84,61 @@ string loadTexturePathFromMTL(const string &mtlPath);
 GLuint loadTexture(const string &texturePath);
 GLuint loadSimpleOBJ(string filePath, int &nVertices);
 
+Material loadMaterialFromMTL(const string &mtlPath);
+
 // ---- SHADERS ----
 const GLchar *vertexShaderSource = "#version 450\n"
 																	 "layout (location = 0) in vec3 position;\n"
 																	 "layout (location = 1) in vec3 color;\n"
 																	 "layout (location = 2) in vec2 texCoord;\n"
+																	 "layout (location = 3) in vec3 normal;\n"
 																	 "uniform mat4 model;\n"
+																	 "uniform mat4 view;\n"
+																	 "uniform mat4 projection;\n"
 																	 "out vec2 fragTexCoord;\n"
+																	 "out vec3 fragNormal;\n"
+																	 "out vec3 fragPosition;\n"
 																	 "void main()\n"
 																	 "{\n"
-																	 "   gl_Position = model * vec4(position, 1.0);\n"
+																	 "   vec4 worldPos = model * vec4(position, 1.0);\n"
+																	 "   gl_Position = projection * view * worldPos;\n"
 																	 "   fragTexCoord = texCoord;\n"
+																	 "   fragNormal = normalize(mat3(transpose(inverse(model))) * normal);\n"
+																	 "   fragPosition = vec3(worldPos);\n"
 																	 "}\0";
 
 const GLchar *fragmentShaderSource = "#version 450\n"
 																		 "in vec2 fragTexCoord;\n"
+																		 "in vec3 fragNormal;\n"
+																		 "in vec3 fragPosition;\n"
 																		 "out vec4 color;\n"
 																		 "uniform sampler2D texture1;\n"
+																		 "uniform vec3 materialAmbient;\n"
+																		 "uniform vec3 materialDiffuse;\n"
+																		 "uniform vec3 materialSpecular;\n"
+																		 "uniform vec3 lightPosition;\n"
+																		 "uniform vec3 viewPosition;\n"
 																		 "void main()\n"
 																		 "{\n"
-																		 "   color = texture(texture1, fragTexCoord);\n"
-																		 "}\n\0";
+																		 "vec3 normal = normalize(fragNormal);\n"
+																		 "vec3 lightDirection = normalize(lightPosition - fragPosition);\n"
+																		 "vec3 viewDirection = normalize(viewPosition - fragPosition);\n"
+																		 "vec3 reflectionDirection = reflect(-lightDirection, normal);\n"
+																		 "vec3 ambient = materialAmbient;\n"
+																		 "float diffuseIntensity = max(dot(normal, lightDirection), 0.0);\n"
+																		 "vec3 diffuse = materialDiffuse * diffuseIntensity;\n"
+																		 "float specularIntensity = pow(max(dot(viewDirection, reflectionDirection), 0.0),32.0);\n"
+																		 "vec3 specular = materialSpecular * specularIntensity;\n"
+																		 "vec3 phong = ambient + diffuse + specular;\n"
+																		 "vec4 textureColor = texture(texture1, fragTexCoord);\n"
+																		 "color = vec4(phong, 1.0) * textureColor;\n}\n\0";
 
 // ---- FUNÇÃO MAIN ----
 int main()
 {
 	glfwInit();
 
-	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Olá Textures 3D -- Gabriela Bado", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Olá Iluminação 3D -- Gabriela Bado", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	glfwSetKeyCallback(window, key_callback);
@@ -126,14 +160,58 @@ int main()
 	glViewport(0, 0, width, height);
 
 	GLuint shaderID = setupShader();
-	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Cube.obj", nVertices);
-	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Cube.mtl");
-	GLuint textureID = loadTexture("../assets/Modelos3D/" + textureName);
+	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Suzanne/Suzanne.obj", nVertices);
+	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
+	GLuint textureID = loadTexture("../assets/Modelos3D/Suzanne/" + textureName);
+	Material material = loadMaterialFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
 
 	glUseProgram(shaderID);
 
+	glm::vec3 cameraPosition(0.0f, 2.0f, 3.0f);
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "materialAmbient"),
+			1,
+			glm::value_ptr(material.ambient));
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "materialDiffuse"),
+			1,
+			glm::value_ptr(material.diffuse));
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "materialSpecular"),
+			1,
+			glm::value_ptr(material.specular));
+
+	glUniform3f(
+			glGetUniformLocation(shaderID, "lightPosition"),
+			2.0f,
+			2.0f,
+			2.0f);
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "viewPosition"),
+			1,
+			glm::value_ptr(cameraPosition));
+
 	glUniform1i(glGetUniformLocation(shaderID, "texture1"), 0);
 	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
+
+	glm::mat4 view = glm::lookAt(
+			glm::vec3(0.0f, 2.0f, 3.0f),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f));
+	GLint viewLoc = glGetUniformLocation(shaderID, "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+	glm::mat4 projection = glm::perspective(
+			glm::radians(45.0f),
+			(float)WIDTH / (float)HEIGHT,
+			0.1f,
+			100.0f);
+	GLint projectionLoc = glGetUniformLocation(shaderID, "projection");
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -196,6 +274,47 @@ string loadTexturePathFromMTL(const string &mtlPath)
 	return "";
 }
 
+Material loadMaterialFromMTL(const string &mtlPath)
+{
+	Material material = {
+			glm::vec3(0.0f),
+			glm::vec3(0.0f),
+			glm::vec3(0.0f)};
+
+	ifstream file(mtlPath);
+
+	if (!file.is_open())
+	{
+		cout << "Erro ao abrir MTL" << endl;
+		return material;
+	}
+
+	string line;
+
+	while (getline(file, line))
+	{
+		istringstream ss(line);
+
+		string word;
+		ss >> word;
+
+		if (word == "Ka")
+		{
+			ss >> material.ambient.r >> material.ambient.g >> material.ambient.b;
+		}
+		else if (word == "Kd")
+		{
+			ss >> material.diffuse.r >> material.diffuse.g >> material.diffuse.b;
+		}
+		else if (word == "Ks")
+		{
+			ss >> material.specular.r >> material.specular.g >> material.specular.b;
+		}
+	}
+
+	return material;
+}
+
 GLuint loadTexture(
 		const string &texturePath)
 {
@@ -242,7 +361,7 @@ GLuint loadTexture(
 
 void prepareFrame()
 {
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
