@@ -135,7 +135,7 @@ int main()
 {
 	glfwInit();
 
-	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Olá Textures 3D -- Gabriela Bado", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Olá Iluminação 3D -- Gabriela Bado", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	glfwSetKeyCallback(window, key_callback);
@@ -157,10 +157,10 @@ int main()
 	glViewport(0, 0, width, height);
 
 	GLuint shaderID = setupShader();
-	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Cube.obj", nVertices);
-	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Cube.mtl");
-	GLuint textureID = loadTexture("../assets/Modelos3D/" + textureName);
-	Material material = loadMaterialFromMTL("../assets/Modelos3D/Cube.mtl");
+	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Suzanne/Suzanne.obj", nVertices);
+	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
+	GLuint textureID = loadTexture("../assets/Modelos3D/Suzanne/" + textureName);
+	Material material = loadMaterialFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
 
 	glUseProgram(shaderID);
 
