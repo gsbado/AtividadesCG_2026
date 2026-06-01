@@ -38,6 +38,14 @@ struct Material
 	glm::vec3 specular;
 };
 
+struct Light
+{
+	glm::vec3 position;
+	glm::vec3 color;
+	float intensity;
+	bool enabled;
+};
+
 // ---- VARIÁVEIS GLOBAIS ----
 vector<Object3D> objects = {
 		{glm::vec3(-0.5f, -0.5f, 0.0f),
@@ -60,6 +68,24 @@ const GLuint WIDTH = 1000, HEIGHT = 1000;
 const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
 const float ROTATION_STEP = 0.1f;
+
+Light keyLight = {
+		glm::vec3(2.0f, 2.0f, 2.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f),
+		1.0f,
+		true};
+
+Light fillLight = {
+		glm::vec3(-2.0f, 1.0f, 2.0f),
+		glm::vec3(0.6f, 0.6f, 0.8f),
+		0.5f,
+		true};
+
+Light backLight = {
+		glm::vec3(0.0f, 3.0f, -2.0f),
+		glm::vec3(0.8f, 0.8f, 0.8f),
+		0.7f,
+		true};
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -184,12 +210,6 @@ int main()
 			1,
 			glm::value_ptr(material.specular));
 
-	glUniform3f(
-			glGetUniformLocation(shaderID, "lightPosition"),
-			2.0f,
-			2.0f,
-			2.0f);
-
 	glUniform3fv(
 			glGetUniformLocation(shaderID, "viewPosition"),
 			1,
@@ -226,15 +246,15 @@ int main()
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID);
 
-	for (const Object3D &object : objects)
-	{
-		renderObject3D(
-			object,
-			VAO,
-			modelMatrixLocation);
-	}
+		for (const Object3D &object : objects)
+		{
+			renderObject3D(
+					object,
+					VAO,
+					modelMatrixLocation);
+		}
 
-	glfwSwapBuffers(window);
+		glfwSwapBuffers(window);
 	}
 	glDeleteTextures(1, &textureID);
 	glDeleteVertexArrays(1, &VAO);
@@ -428,10 +448,28 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 				(selectedObjectIndex + 1) % objects.size();
 
 		cout << "Object3D selected: "
-			 << selectedObjectIndex + 1
-			 << endl;
+				 << selectedObjectIndex + 1
+				 << endl;
 
 		return;
+	}
+
+	if (key == GLFW_KEY_1)
+	{
+		keyLight.enabled = !keyLight.enabled;
+		cout << "Key Light: " << (keyLight.enabled ? "ON" : "OFF") << endl;
+	}
+
+	if (key == GLFW_KEY_2)
+	{
+		fillLight.enabled = !fillLight.enabled;
+		cout << "Fill Light: " << (fillLight.enabled ? "ON" : "OFF") << endl;
+	}
+
+	if (key == GLFW_KEY_3)
+	{
+		backLight.enabled = !backLight.enabled;
+		cout << "Back Light: " << (backLight.enabled ? "ON" : "OFF") << endl;
 	}
 
 	handleRotationKeys(key);
