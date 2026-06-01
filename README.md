@@ -8,7 +8,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 2. Módulo 2: [HelloSquares3D](src/Desafios/M2/HelloSquares3D.cpp) - modelagem de um cubo com aplicação de transformações geométricas (translação, escala, rotação) e suporte a múltiplas instâncias via teclado
 3. Atividade Vivencial 01: [Vivencial01](src/Desafios/AV1/Vivencial01.cpp) - importação de geometria via .OBJ, renderização de múltiplos objetos 3D e aplicação de transformações independentes com seleção via teclado.
 4. Módulo 3: [HelloTextures3D](src/Desafios/M3/HelloTextures3D.cpp) - importação de geometria via .OBJ, leitura de materiais .MTL e renderização de objetos 3D texturizados com mapeamento UV
-5. Módulo 4: [HelloIllumination3D](src/Desafios/M4/HelloIllumination3D.cpp) - [loading]
+5. Módulo 4: [HelloIllumination3D](src/Desafios/M4/HelloIllumination3D.cpp) - aplicação do modelo de iluminação de Phong em objetos 3D texturizados, utilizando normais do arquivo .OBJ e propriedades de material definidas em .MTL
 6. Atividade Vivencial 02: [Vivencial02](src/Desafios/AV2/Vivencial02.cpp) - [loading]
 
 ## 📂 Estrutura do Repositório
