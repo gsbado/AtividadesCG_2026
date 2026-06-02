@@ -1,0 +1,562 @@
+/* First Person Camera - código adaptado de HelloIllumination3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
+ *
+ * Modificado por Gabriela Spanemberg Bado
+ * para a disciplina de Computação Gráfica - Unisinos
+ * Versão inicial: 7/4/2017
+ * Última atualização em 02/06/2026
+ */
+
+// ---- HEADERS GLFW, GLAD, GLM ----
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <assert.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <vector>
+
+using namespace std;
+
+// ---- STRUCTS ----
+struct Cube
+{
+	glm::vec3 position;
+	glm::vec3 scale;
+	glm::vec3 rotation;
+};
+
+struct Material
+{
+	glm::vec3 ambient;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
+};
+
+// ---- VARIÁVEIS GLOBAIS ----
+vector<Cube> cubes = {
+		{glm::vec3(-0.5f, -0.5f, 0.0f),
+		 glm::vec3(0.4f),
+		 glm::vec3(0.0f)},
+		{glm::vec3(0.5f, -0.5f, 0.0f),
+		 glm::vec3(0.4f),
+		 glm::vec3(0.0f)},
+		{glm::vec3(-0.5f, 0.5f, 0.0f),
+		 glm::vec3(0.4f),
+		 glm::vec3(0.0f)},
+		{glm::vec3(0.5f, 0.5f, 0.0f),
+		 glm::vec3(0.4f),
+		 glm::vec3(0.0f)}};
+
+int selectedCubeIndex = 0;
+int nVertices = 0;
+
+const GLuint WIDTH = 1000, HEIGHT = 1000;
+const float MOVEMENT_STEP = 0.1f;
+const float SCALE_STEP = 0.1f;
+const float ROTATION_STEP = 0.1f;
+
+// ---- DECLARAÇÃO DE FUNÇÕES ----
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+
+void handleRotationKeys(int key);
+void handleMovementKeys(int key);
+void handleScaleKeys(int key);
+
+void prepareFrame();
+glm::mat4 buildCubeModelMatrix(const Cube &cube);
+Cube &getSelectedCube();
+
+void showControlsGuide();
+
+void renderCube(
+		const Cube &cube,
+		GLuint cubeVAO,
+		GLint modelMatrixLocation);
+
+int setupShader();
+string loadTexturePathFromMTL(const string &mtlPath);
+GLuint loadTexture(const string &texturePath);
+GLuint loadSimpleOBJ(string filePath, int &nVertices);
+
+Material loadMaterialFromMTL(const string &mtlPath);
+
+// ---- SHADERS ----
+const GLchar *vertexShaderSource = "#version 450\n"
+																	 "layout (location = 0) in vec3 position;\n"
+																	 "layout (location = 1) in vec3 color;\n"
+																	 "layout (location = 2) in vec2 texCoord;\n"
+																	 "layout (location = 3) in vec3 normal;\n"
+																	 "uniform mat4 model;\n"
+																	 "uniform mat4 view;\n"
+																	 "uniform mat4 projection;\n"
+																	 "out vec2 fragTexCoord;\n"
+																	 "out vec3 fragNormal;\n"
+																	 "out vec3 fragPosition;\n"
+																	 "void main()\n"
+																	 "{\n"
+																	 "   vec4 worldPos = model * vec4(position, 1.0);\n"
+																	 "   gl_Position = projection * view * worldPos;\n"
+																	 "   fragTexCoord = texCoord;\n"
+																	 "   fragNormal = normalize(mat3(transpose(inverse(model))) * normal);\n"
+																	 "   fragPosition = vec3(worldPos);\n"
+																	 "}\0";
+
+const GLchar *fragmentShaderSource = "#version 450\n"
+																		 "in vec2 fragTexCoord;\n"
+																		 "in vec3 fragNormal;\n"
+																		 "in vec3 fragPosition;\n"
+																		 "out vec4 color;\n"
+																		 "uniform sampler2D texture1;\n"
+																		 "uniform vec3 materialAmbient;\n"
+																		 "uniform vec3 materialDiffuse;\n"
+																		 "uniform vec3 materialSpecular;\n"
+																		 "uniform vec3 lightPosition;\n"
+																		 "uniform vec3 viewPosition;\n"
+																		 "void main()\n"
+																		 "{\n"
+																		 "vec3 normal = normalize(fragNormal);\n"
+																		 "vec3 lightDirection = normalize(lightPosition - fragPosition);\n"
+																		 "vec3 viewDirection = normalize(viewPosition - fragPosition);\n"
+																		 "vec3 reflectionDirection = reflect(-lightDirection, normal);\n"
+																		 "vec3 ambient = materialAmbient;\n"
+																		 "float diffuseIntensity = max(dot(normal, lightDirection), 0.0);\n"
+																		 "vec3 diffuse = materialDiffuse * diffuseIntensity;\n"
+																		 "float specularIntensity = pow(max(dot(viewDirection, reflectionDirection), 0.0),32.0);\n"
+																		 "vec3 specular = materialSpecular * specularIntensity;\n"
+																		 "vec3 phong = ambient + diffuse + specular;\n"
+																		 "vec4 textureColor = texture(texture1, fragTexCoord);\n"
+																		 "color = vec4(phong, 1.0) * textureColor;\n}\n\0";
+
+// ---- FUNÇÃO MAIN ----
+int main()
+{
+	glfwInit();
+
+	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Câmera em Primeira Pessoa -- Gabriela Bado", nullptr, nullptr);
+	glfwMakeContextCurrent(window);
+
+	glfwSetKeyCallback(window, key_callback);
+
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "Failed to initialize GLAD" << std::endl;
+	}
+
+	const GLubyte *renderer = glGetString(GL_RENDERER);
+	const GLubyte *version = glGetString(GL_VERSION);
+	cout << "Renderer: " << renderer << endl;
+	cout << "OpenGL version supported " << version << endl;
+
+	showControlsGuide();
+
+	int width, height;
+	glfwGetFramebufferSize(window, &width, &height);
+	glViewport(0, 0, width, height);
+
+	GLuint shaderID = setupShader();
+	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Suzanne/Suzanne.obj", nVertices);
+	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
+	GLuint textureID = loadTexture("../assets/Modelos3D/Suzanne/" + textureName);
+	Material material = loadMaterialFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
+
+	glUseProgram(shaderID);
+
+	glm::vec3 cameraPosition(0.0f, 2.0f, 3.0f);
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "materialAmbient"),
+			1,
+			glm::value_ptr(material.ambient));
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "materialDiffuse"),
+			1,
+			glm::value_ptr(material.diffuse));
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "materialSpecular"),
+			1,
+			glm::value_ptr(material.specular));
+
+	glUniform3f(
+			glGetUniformLocation(shaderID, "lightPosition"),
+			2.0f,
+			2.0f,
+			2.0f);
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "viewPosition"),
+			1,
+			glm::value_ptr(cameraPosition));
+
+	glUniform1i(glGetUniformLocation(shaderID, "texture1"), 0);
+	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
+
+	glm::mat4 view = glm::lookAt(
+			glm::vec3(0.0f, 2.0f, 3.0f),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f));
+	GLint viewLoc = glGetUniformLocation(shaderID, "view");
+	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+	glm::mat4 projection = glm::perspective(
+			glm::radians(45.0f),
+			(float)WIDTH / (float)HEIGHT,
+			0.1f,
+			100.0f);
+	GLint projectionLoc = glGetUniformLocation(shaderID, "projection");
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	while (!glfwWindowShouldClose(window))
+	{
+		glfwPollEvents();
+
+		prepareFrame();
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureID);
+
+		for (const Cube &cube : cubes)
+		{
+			renderCube(
+					cube,
+					VAO,
+					modelMatrixLocation);
+		}
+
+		glfwSwapBuffers(window);
+	}
+
+	glDeleteTextures(1, &textureID);
+	glDeleteVertexArrays(1, &VAO);
+
+	glfwTerminate();
+	return 0;
+}
+
+// ---- IMPLEMENTAÇÃO DAS FUNÇÕES ----
+string loadTexturePathFromMTL(const string &mtlPath)
+{
+	ifstream file(mtlPath);
+
+	if (!file.is_open())
+	{
+		cout << "Erro ao abrir MTL"
+				 << endl;
+		return "";
+	}
+
+	string line;
+
+	while (getline(file, line))
+	{
+		istringstream ss(line);
+		string word;
+		ss >> word;
+		if (word == "map_Kd")
+		{
+			string textureName;
+			ss >> textureName;
+			return textureName;
+		}
+	}
+
+	return "";
+}
+
+Material loadMaterialFromMTL(const string &mtlPath)
+{
+	Material material = {
+			glm::vec3(0.0f),
+			glm::vec3(0.0f),
+			glm::vec3(0.0f)};
+
+	ifstream file(mtlPath);
+
+	if (!file.is_open())
+	{
+		cout << "Erro ao abrir MTL" << endl;
+		return material;
+	}
+
+	string line;
+
+	while (getline(file, line))
+	{
+		istringstream ss(line);
+
+		string word;
+		ss >> word;
+
+		if (word == "Ka")
+		{
+			ss >> material.ambient.r >> material.ambient.g >> material.ambient.b;
+		}
+		else if (word == "Kd")
+		{
+			ss >> material.diffuse.r >> material.diffuse.g >> material.diffuse.b;
+		}
+		else if (word == "Ks")
+		{
+			ss >> material.specular.r >> material.specular.g >> material.specular.b;
+		}
+	}
+
+	return material;
+}
+
+GLuint loadTexture(
+		const string &texturePath)
+{
+	GLuint textureID;
+
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	stbi_set_flip_vertically_on_load(true);
+
+	int width;
+	int height;
+	int channels;
+
+	unsigned char *data = stbi_load(
+			texturePath.c_str(),
+			&width,
+			&height,
+			&channels,
+			0);
+
+	if (!data)
+	{
+		cout << "Erro ao carregar textura: "
+				 << texturePath
+				 << endl;
+
+		return 0;
+	}
+	GLenum format = (channels == 4)
+											? GL_RGBA
+											: GL_RGB;
+
+	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(data);
+
+	return textureID;
+}
+
+void prepareFrame()
+{
+	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+Cube &getSelectedCube()
+{
+	return cubes[selectedCubeIndex];
+}
+
+glm::mat4 buildCubeModelMatrix(const Cube &cube)
+{
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+
+	modelMatrix = glm::translate(
+			modelMatrix,
+			cube.position);
+
+	modelMatrix = glm::scale(
+			modelMatrix,
+			cube.scale);
+
+	modelMatrix = glm::rotate(
+			modelMatrix,
+			cube.rotation.x,
+			glm::vec3(1.0f, 0.0f, 0.0f));
+
+	modelMatrix = glm::rotate(
+			modelMatrix,
+			cube.rotation.y,
+			glm::vec3(0.0f, 1.0f, 0.0f));
+
+	modelMatrix = glm::rotate(
+			modelMatrix,
+			cube.rotation.z,
+			glm::vec3(0.0f, 0.0f, 1.0f));
+
+	return modelMatrix;
+}
+
+void renderCube(const Cube &cube, GLuint cubeVAO, GLint modelMatrixLocation)
+{
+	glm::mat4 modelMatrix = buildCubeModelMatrix(cube);
+
+	glUniformMatrix4fv(
+			modelMatrixLocation,
+			1,
+			GL_FALSE,
+			glm::value_ptr(modelMatrix));
+
+	glBindVertexArray(cubeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, nVertices);
+	glBindVertexArray(0);
+}
+
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
+{
+	if (action != GLFW_PRESS && action != GLFW_REPEAT)
+		return;
+
+	if (key == GLFW_KEY_ESCAPE)
+		glfwSetWindowShouldClose(window, GL_TRUE);
+
+	if (key == GLFW_KEY_TAB)
+	{
+		selectedCubeIndex =
+				(selectedCubeIndex + 1) % cubes.size();
+
+		cout << "Cube selected: "
+				 << selectedCubeIndex + 1
+				 << endl;
+
+		return;
+	}
+
+	handleRotationKeys(key);
+	handleMovementKeys(key);
+	handleScaleKeys(key);
+}
+
+void handleRotationKeys(int key)
+{
+	Cube &cube = getSelectedCube();
+
+	if (key == GLFW_KEY_X)
+		cube.rotation.x += ROTATION_STEP;
+
+	if (key == GLFW_KEY_Y)
+		cube.rotation.y += ROTATION_STEP;
+
+	if (key == GLFW_KEY_Z)
+		cube.rotation.z += ROTATION_STEP;
+}
+
+void handleMovementKeys(int key)
+{
+	Cube &cube = getSelectedCube();
+
+	if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT)
+		cube.position.x -= MOVEMENT_STEP;
+
+	if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT)
+		cube.position.x += MOVEMENT_STEP;
+
+	if (key == GLFW_KEY_I || key == GLFW_KEY_UP)
+		cube.position.y += MOVEMENT_STEP;
+
+	if (key == GLFW_KEY_J || key == GLFW_KEY_DOWN)
+		cube.position.y -= MOVEMENT_STEP;
+
+	if (key == GLFW_KEY_W)
+		cube.position.z -= MOVEMENT_STEP;
+
+	if (key == GLFW_KEY_S)
+		cube.position.z += MOVEMENT_STEP;
+}
+
+void handleScaleKeys(int key)
+{
+	Cube &cube = getSelectedCube();
+
+	if (key == GLFW_KEY_LEFT_BRACKET)
+	{
+		cube.scale.x = glm::max(cube.scale.x - SCALE_STEP, 0.2f);
+		cube.scale.y = glm::max(cube.scale.y - SCALE_STEP, 0.2f);
+		cube.scale.z = glm::max(cube.scale.z - SCALE_STEP, 0.2f);
+	}
+
+	if (key == GLFW_KEY_RIGHT_BRACKET)
+	{
+		cube.scale.x = glm::min(cube.scale.x + SCALE_STEP, 1.2f);
+		cube.scale.y = glm::min(cube.scale.y + SCALE_STEP, 1.2f);
+		cube.scale.z = glm::min(cube.scale.z + SCALE_STEP, 1.2f);
+	}
+}
+
+int setupShader()
+{
+
+	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glCompileShader(vertexShader);
+
+	GLint success;
+	GLchar infoLog[512];
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+							<< infoLog << std::endl;
+	}
+
+	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+	glCompileShader(fragmentShader);
+
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
+							<< infoLog << std::endl;
+	}
+
+	GLuint shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
+
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	if (!success)
+	{
+		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+							<< infoLog << std::endl;
+	}
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+
+	return shaderProgram;
+}
+
+void showControlsGuide()
+{
+	cout << endl;
+	cout << "==========================================" << endl;
+	cout << " Bem-vindo ao First Person Camera! " << endl;
+	cout << " Controle seu cubo utilizando as seguintes teclas:" << endl;
+	cout << "------------------------------------------" << endl;
+	cout << " Selecionar : TAB (troca cubo ativo)" << endl;
+	cout << " Movimento X : A | D  ou  <- | ->" << endl;
+	cout << " Movimento Y : I | J  ou  /\\ | \\/" << endl;
+	cout << " Movimento Z : W | S" << endl;
+	cout << " Rotacao     : X | Y | Z" << endl;
+	cout << " Escala      : [ | ]" << endl;
+	cout << " Sair        : ESC" << endl;
+	cout << "==========================================" << endl;
+	cout << endl;
+}

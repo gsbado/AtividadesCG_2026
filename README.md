@@ -10,6 +10,8 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 4. Módulo 3: [HelloTextures3D](src/Desafios/M3/HelloTextures3D.cpp) - importação de geometria via .OBJ, leitura de materiais .MTL e renderização de objetos 3D texturizados com mapeamento UV
 5. Módulo 4: [HelloIllumination3D](src/Desafios/M4/HelloIllumination3D.cpp) - aplicação do modelo de iluminação de Phong em objetos 3D texturizados, utilizando normais do arquivo .OBJ e propriedades de material definidas em .MTL
 6. Atividade Vivencial 02: [Vivencial02](src/Desafios/AV2/Vivencial02.cpp) - [loading]
+7. Módulo 05: [FirstPersonCamera](src/Desafios/M5/FirstPersonCamera.cpp) - [loading]
+8. Módulo 06: [loading]
 
 ## 📂 Estrutura do Repositório
 
@@ -41,7 +43,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 |   |   |   ├── Vivencial02.cpp
 |   |   |   └── README.md
 |   |   ├── 📂 M5/
-|   |   |   ├── nomedoarquivo.cpp
+|   |   |   ├── FirstPersonCamera.cpp
 │   │   |   └── README.md
 |   |   └── 📂 M6/
 |   |       ├── nomedoarquivo.cpp
