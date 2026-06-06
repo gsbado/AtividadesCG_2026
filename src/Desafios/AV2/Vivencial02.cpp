@@ -100,6 +100,8 @@ Object3D &getSelectedObject3D();
 
 void showControlsGuide();
 
+void updateThreePointLighting();
+
 void renderObject3D(
 		const Object3D &object,
 		GLuint objectVAO,
@@ -254,6 +256,8 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
+
+	updateThreePointLighting();
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -437,6 +441,42 @@ glm::mat4 buildObject3DModelMatrix(const Object3D &object)
 	return modelMatrix;
 }
 
+void updateThreePointLighting()
+{
+	Object3D &mainObject = objects[0];
+
+	glm::vec3 center = mainObject.position;
+
+	float distance =
+			glm::max(
+					glm::max(
+							mainObject.scale.x,
+							mainObject.scale.y),
+					mainObject.scale.z) *
+			5.0f;
+
+	keyLight.position =
+			center +
+			glm::vec3(
+					distance,
+					distance,
+					distance);
+
+	fillLight.position =
+			center +
+			glm::vec3(
+					-distance,
+					distance * 0.5f,
+					distance);
+
+	backLight.position =
+			center +
+			glm::vec3(
+					0.0f,
+					distance,
+					-distance);
+}
+
 void renderObject3D(const Object3D &object, GLuint objectVAO, GLint modelMatrixLocation)
 {
 	glm::mat4 modelMatrix = buildObject3DModelMatrix(object);
@@ -493,6 +533,8 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 	handleRotationKeys(key);
 	handleMovementKeys(key);
 	handleScaleKeys(key);
+
+	updateThreePointLighting();
 }
 
 void handleRotationKeys(int key)
