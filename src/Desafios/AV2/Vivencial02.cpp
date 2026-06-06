@@ -69,6 +69,8 @@ const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
 const float ROTATION_STEP = 0.1f;
 
+GLuint gShaderID = 0;
+
 Light keyLight = {
 		glm::vec3(2.0f, 2.0f, 2.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f),
@@ -140,45 +142,103 @@ const GLchar *fragmentShaderSource = "#version 450\n"
 																		 "in vec3 fragNormal;\n"
 																		 "in vec3 fragPosition;\n"
 																		 "out vec4 color;\n"
-																		 "\n"
+
 																		 "uniform sampler2D texture1;\n"
+
 																		 "uniform vec3 materialAmbient;\n"
 																		 "uniform vec3 materialDiffuse;\n"
 																		 "uniform vec3 materialSpecular;\n"
-																		 "uniform vec3 lightPosition;\n"
+
+																		 "uniform vec3 keyLightPosition;\n"
+																		 "uniform vec3 fillLightPosition;\n"
+																		 "uniform vec3 backLightPosition;\n"
+
+																		 "uniform vec3 keyLightColor;\n"
+																		 "uniform vec3 fillLightColor;\n"
+																		 "uniform vec3 backLightColor;\n"
+
+																		 "uniform float keyLightIntensity;\n"
+																		 "uniform float fillLightIntensity;\n"
+																		 "uniform float backLightIntensity;\n"
+
 																		 "uniform vec3 viewPosition;\n"
-																		 "\n"
+
 																		 "float attenuation(float distance)\n"
 																		 "{\n"
 																		 "    float constant = 1.0;\n"
 																		 "    float linear = 0.09;\n"
 																		 "    float quadratic = 0.032;\n"
+
 																		 "    return 1.0 / (constant + linear * distance + quadratic * distance * distance);\n"
 																		 "}\n"
-																		 "\n"
-																		 "void main()\n"
+
+																		 "vec3 calculateLight(\n"
+																		 "    vec3 lightPosition,\n"
+																		 "    vec3 lightColor,\n"
+																		 "    float lightIntensity,\n"
+																		 "    vec3 normal,\n"
+																		 "    vec3 fragPosition,\n"
+																		 "    vec3 viewDir)\n"
 																		 "{\n"
-																		 "    vec3 normal = normalize(fragNormal);\n"
+
 																		 "    vec3 lightDir = normalize(lightPosition - fragPosition);\n"
-																		 "    vec3 viewDir = normalize(viewPosition - fragPosition);\n"
-																		 "    vec3 reflectDir = reflect(-lightDir, normal);\n"
-																		 "\n"
+
 																		 "    float distance = length(lightPosition - fragPosition);\n"
 																		 "    float att = attenuation(distance);\n"
-																		 "\n"
-																		 "    vec3 ambient = materialAmbient;\n"
-																		 "\n"
+
+																		 "    vec3 reflectDir = reflect(-lightDir, normal);\n"
+
 																		 "    float diff = max(dot(normal, lightDir), 0.0);\n"
-																		 "    vec3 diffuse = materialDiffuse * diff;\n"
-																		 "\n"
+
 																		 "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);\n"
-																		 "    vec3 specular = materialSpecular * spec;\n"
-																		 "\n"
-																		 "    vec3 phong = (ambient + diffuse + specular) * att;\n"
-																		 "\n"
+
+																		 "    vec3 ambient = materialAmbient * lightColor * lightIntensity;\n"
+
+																		 "    vec3 diffuse = materialDiffuse * diff * lightColor * lightIntensity;\n"
+
+																		 "    vec3 specular = materialSpecular * spec * lightColor * lightIntensity;\n"
+
+																		 "    return (ambient + diffuse + specular) * att;\n"
+																		 "}\n"
+
+																		 "void main()\n"
+																		 "{\n"
+
+																		 "    vec3 normal = normalize(fragNormal);\n"
+
+																		 "    vec3 viewDir = normalize(viewPosition - fragPosition);\n"
+
+																		 "    vec3 phong = vec3(0.0);\n"
+
+																		 "    phong += calculateLight(\n"
+																		 "        keyLightPosition,\n"
+																		 "        keyLightColor,\n"
+																		 "        keyLightIntensity,\n"
+																		 "        normal,\n"
+																		 "        fragPosition,\n"
+																		 "        viewDir);\n"
+
+																		 "    phong += calculateLight(\n"
+																		 "        fillLightPosition,\n"
+																		 "        fillLightColor,\n"
+																		 "        fillLightIntensity,\n"
+																		 "        normal,\n"
+																		 "        fragPosition,\n"
+																		 "        viewDir);\n"
+
+																		 "    phong += calculateLight(\n"
+																		 "        backLightPosition,\n"
+																		 "        backLightColor,\n"
+																		 "        backLightIntensity,\n"
+																		 "        normal,\n"
+																		 "        fragPosition,\n"
+																		 "        viewDir);\n"
+
 																		 "    vec4 texColor = texture(texture1, fragTexCoord);\n"
+
 																		 "    color = vec4(phong, 1.0) * texColor;\n"
-																		 "}\n\0";
+																		 "}\0";
+
 // ---- FUNÇÃO MAIN ----
 int main()
 {
@@ -206,6 +266,7 @@ int main()
 	glViewport(0, 0, width, height);
 
 	GLuint shaderID = setupShader();
+	gShaderID = shaderID;
 	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Suzanne/Suzanne.obj", nVertices);
 	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
 	GLuint textureID = loadTexture("../assets/Modelos3D/Suzanne/" + textureName);
@@ -235,6 +296,50 @@ int main()
 			1,
 			glm::value_ptr(cameraPosition));
 
+	updateThreePointLighting();
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "keyLightPosition"),
+			1,
+			glm::value_ptr(keyLight.position));
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "fillLightPosition"),
+			1,
+			glm::value_ptr(fillLight.position));
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "backLightPosition"),
+			1,
+			glm::value_ptr(backLight.position));
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "keyLightColor"),
+			1,
+			glm::value_ptr(keyLight.color));
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "fillLightColor"),
+			1,
+			glm::value_ptr(fillLight.color));
+
+	glUniform3fv(
+			glGetUniformLocation(shaderID, "backLightColor"),
+			1,
+			glm::value_ptr(backLight.color));
+
+	glUniform1f(
+			glGetUniformLocation(shaderID, "keyLightIntensity"),
+			keyLight.intensity);
+
+	glUniform1f(
+			glGetUniformLocation(shaderID, "fillLightIntensity"),
+			fillLight.intensity);
+
+	glUniform1f(
+			glGetUniformLocation(shaderID, "backLightIntensity"),
+			backLight.intensity);
+
 	glUniform1i(glGetUniformLocation(shaderID, "texture1"), 0);
 	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
 
@@ -257,13 +362,28 @@ int main()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	updateThreePointLighting();
-
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
 
 		prepareFrame();
+
+		updateThreePointLighting();
+
+		glUniform3fv(
+				glGetUniformLocation(shaderID, "keyLightPosition"),
+				1,
+				glm::value_ptr(keyLight.position));
+
+		glUniform3fv(
+				glGetUniformLocation(shaderID, "fillLightPosition"),
+				1,
+				glm::value_ptr(fillLight.position));
+
+		glUniform3fv(
+				glGetUniformLocation(shaderID, "backLightPosition"),
+				1,
+				glm::value_ptr(backLight.position));
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID);
@@ -535,6 +655,20 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 	handleScaleKeys(key);
 
 	updateThreePointLighting();
+
+	glUseProgram(gShaderID);
+
+	glUniform1f(
+			glGetUniformLocation(gShaderID, "keyLightIntensity"),
+			keyLight.enabled ? keyLight.intensity : 0.0f);
+
+	glUniform1f(
+			glGetUniformLocation(gShaderID, "fillLightIntensity"),
+			fillLight.enabled ? fillLight.intensity : 0.0f);
+
+	glUniform1f(
+			glGetUniformLocation(gShaderID, "backLightIntensity"),
+			backLight.enabled ? backLight.intensity : 0.0f);
 }
 
 void handleRotationKeys(int key)
@@ -653,6 +787,9 @@ void showControlsGuide()
 	cout << " Movimento Z : W | S" << endl;
 	cout << " Rotacao     : X | Y | Z" << endl;
 	cout << " Escala      : [ | ]" << endl;
+	cout << " Luz Key     : 1" << endl;
+	cout << " Luz Fill    : 2" << endl;
+	cout << " Luz Back    : 3" << endl;
 	cout << " Sair        : ESC" << endl;
 	cout << "==========================================" << endl;
 	cout << endl;
