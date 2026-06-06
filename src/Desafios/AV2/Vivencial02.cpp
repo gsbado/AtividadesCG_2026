@@ -563,7 +563,7 @@ glm::mat4 buildObject3DModelMatrix(const Object3D &object)
 
 void updateThreePointLighting()
 {
-	Object3D &mainObject = objects[0];
+	Object3D &mainObject = getSelectedObject3D();
 
 	glm::vec3 center = mainObject.position;
 
