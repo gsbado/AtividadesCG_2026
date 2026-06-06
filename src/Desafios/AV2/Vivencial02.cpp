@@ -74,19 +74,19 @@ GLuint gShaderID = 0;
 Light keyLight = {
 		glm::vec3(2.0f, 2.0f, 2.0f),
 		glm::vec3(1.0f, 1.0f, 1.0f),
-		1.0f,
+		0.8f,
 		true};
 
 Light fillLight = {
 		glm::vec3(-2.0f, 1.0f, 2.0f),
 		glm::vec3(0.6f, 0.6f, 0.8f),
-		0.5f,
+		0.25f,
 		true};
 
 Light backLight = {
 		glm::vec3(0.0f, 3.0f, -2.0f),
 		glm::vec3(0.8f, 0.8f, 0.8f),
-		0.7f,
+		0.35f,
 		true};
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
@@ -166,8 +166,8 @@ const GLchar *fragmentShaderSource = "#version 450\n"
 																		 "float attenuation(float distance)\n"
 																		 "{\n"
 																		 "    float constant = 1.0;\n"
-																		 "    float linear = 0.09;\n"
-																		 "    float quadratic = 0.032;\n"
+																		 "    float linear = 0.14;\n"
+																		 "    float quadratic = 0.07;\n"
 
 																		 "    return 1.0 / (constant + linear * distance + quadratic * distance * distance);\n"
 																		 "}\n"
@@ -198,7 +198,7 @@ const GLchar *fragmentShaderSource = "#version 450\n"
 
 																		 "    vec3 specular = materialSpecular * spec * lightColor * lightIntensity;\n"
 
-																		 "    return (ambient + diffuse + specular) * att;\n"
+																		 "    return ambient + (diffuse + specular) * att;\n"
 																		 "}\n"
 
 																		 "void main()\n"
@@ -779,7 +779,7 @@ void showControlsGuide()
 	cout << endl;
 	cout << "==========================================" << endl;
 	cout << " Bem-vindo a Atividade Vivencial 02 " << endl;
-	cout << " Controle seu cubo utilizando as seguintes teclas:" << endl;
+	cout << " Controle seu objeto utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
 	cout << " Selecionar : TAB (troca cubo ativo)" << endl;
 	cout << " Movimento X : A | D  ou  <- | ->" << endl;
