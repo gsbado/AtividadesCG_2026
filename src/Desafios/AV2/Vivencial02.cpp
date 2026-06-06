@@ -100,6 +100,16 @@ void prepareFrame();
 glm::mat4 buildObject3DModelMatrix(const Object3D &object);
 Object3D &getSelectedObject3D();
 
+glm::vec3 parseVec3(std::istringstream &ss);
+void setUniformVec3(GLuint shaderID, const char *name, const glm::vec3 &value);
+void setUniformFloat(GLuint shaderID, const char *name, float value);
+void uploadMaterialToShader(GLuint shaderID, const Material &material);
+void uploadLightPositions(GLuint shaderID);
+void uploadLightColors(GLuint shaderID);
+void uploadLightIntensities(GLuint shaderID);
+GLuint compileShader(GLenum shaderType, const GLchar *source);
+void checkShaderCompileErrors(GLuint shader, const std::string &type);
+
 void showControlsGuide();
 
 void updateThreePointLighting();
@@ -276,69 +286,13 @@ int main()
 
 	glm::vec3 cameraPosition(0.0f, 2.0f, 3.0f);
 
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "materialAmbient"),
-			1,
-			glm::value_ptr(material.ambient));
-
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "materialDiffuse"),
-			1,
-			glm::value_ptr(material.diffuse));
-
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "materialSpecular"),
-			1,
-			glm::value_ptr(material.specular));
-
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "viewPosition"),
-			1,
-			glm::value_ptr(cameraPosition));
+	uploadMaterialToShader(shaderID, material);
+	setUniformVec3(shaderID, "viewPosition", cameraPosition);
 
 	updateThreePointLighting();
-
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "keyLightPosition"),
-			1,
-			glm::value_ptr(keyLight.position));
-
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "fillLightPosition"),
-			1,
-			glm::value_ptr(fillLight.position));
-
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "backLightPosition"),
-			1,
-			glm::value_ptr(backLight.position));
-
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "keyLightColor"),
-			1,
-			glm::value_ptr(keyLight.color));
-
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "fillLightColor"),
-			1,
-			glm::value_ptr(fillLight.color));
-
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "backLightColor"),
-			1,
-			glm::value_ptr(backLight.color));
-
-	glUniform1f(
-			glGetUniformLocation(shaderID, "keyLightIntensity"),
-			keyLight.intensity);
-
-	glUniform1f(
-			glGetUniformLocation(shaderID, "fillLightIntensity"),
-			fillLight.intensity);
-
-	glUniform1f(
-			glGetUniformLocation(shaderID, "backLightIntensity"),
-			backLight.intensity);
+	uploadLightPositions(shaderID);
+	uploadLightColors(shaderID);
+	uploadLightIntensities(shaderID);
 
 	glUniform1i(glGetUniformLocation(shaderID, "texture1"), 0);
 	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
@@ -369,21 +323,7 @@ int main()
 		prepareFrame();
 
 		updateThreePointLighting();
-
-		glUniform3fv(
-				glGetUniformLocation(shaderID, "keyLightPosition"),
-				1,
-				glm::value_ptr(keyLight.position));
-
-		glUniform3fv(
-				glGetUniformLocation(shaderID, "fillLightPosition"),
-				1,
-				glm::value_ptr(fillLight.position));
-
-		glUniform3fv(
-				glGetUniformLocation(shaderID, "backLightPosition"),
-				1,
-				glm::value_ptr(backLight.position));
+		uploadLightPositions(shaderID);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID);
@@ -435,6 +375,13 @@ string loadTexturePathFromMTL(const string &mtlPath)
 	return "";
 }
 
+glm::vec3 parseVec3(std::istringstream &ss)
+{
+	glm::vec3 value(0.0f);
+	ss >> value.r >> value.g >> value.b;
+	return value;
+}
+
 Material loadMaterialFromMTL(const string &mtlPath)
 {
 	Material material = {
@@ -461,15 +408,15 @@ Material loadMaterialFromMTL(const string &mtlPath)
 
 		if (word == "Ka")
 		{
-			ss >> material.ambient.r >> material.ambient.g >> material.ambient.b;
+			material.ambient = parseVec3(ss);
 		}
 		else if (word == "Kd")
 		{
-			ss >> material.diffuse.r >> material.diffuse.g >> material.diffuse.b;
+			material.diffuse = parseVec3(ss);
 		}
 		else if (word == "Ks")
 		{
-			ss >> material.specular.r >> material.specular.g >> material.specular.b;
+			material.specular = parseVec3(ss);
 		}
 	}
 
@@ -535,30 +482,75 @@ glm::mat4 buildObject3DModelMatrix(const Object3D &object)
 {
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 
-	modelMatrix = glm::translate(
-			modelMatrix,
-			object.position);
-
-	modelMatrix = glm::scale(
-			modelMatrix,
-			object.scale);
-
-	modelMatrix = glm::rotate(
-			modelMatrix,
-			object.rotation.x,
-			glm::vec3(1.0f, 0.0f, 0.0f));
-
-	modelMatrix = glm::rotate(
-			modelMatrix,
-			object.rotation.y,
-			glm::vec3(0.0f, 1.0f, 0.0f));
-
-	modelMatrix = glm::rotate(
-			modelMatrix,
-			object.rotation.z,
-			glm::vec3(0.0f, 0.0f, 1.0f));
+	modelMatrix = glm::translate(modelMatrix, object.position);
+	modelMatrix = glm::scale(modelMatrix, object.scale);
+	modelMatrix = glm::rotate(modelMatrix, object.rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, object.rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, object.rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	return modelMatrix;
+}
+
+void setUniformVec3(GLuint shaderID, const char *name, const glm::vec3 &value)
+{
+	GLint location = glGetUniformLocation(shaderID, name);
+	glUniform3fv(location, 1, glm::value_ptr(value));
+}
+
+void setUniformFloat(GLuint shaderID, const char *name, float value)
+{
+	GLint location = glGetUniformLocation(shaderID, name);
+	glUniform1f(location, value);
+}
+
+void uploadMaterialToShader(GLuint shaderID, const Material &material)
+{
+	setUniformVec3(shaderID, "materialAmbient", material.ambient);
+	setUniformVec3(shaderID, "materialDiffuse", material.diffuse);
+	setUniformVec3(shaderID, "materialSpecular", material.specular);
+}
+
+void uploadLightPositions(GLuint shaderID)
+{
+	setUniformVec3(shaderID, "keyLightPosition", keyLight.position);
+	setUniformVec3(shaderID, "fillLightPosition", fillLight.position);
+	setUniformVec3(shaderID, "backLightPosition", backLight.position);
+}
+
+void uploadLightColors(GLuint shaderID)
+{
+	setUniformVec3(shaderID, "keyLightColor", keyLight.color);
+	setUniformVec3(shaderID, "fillLightColor", fillLight.color);
+	setUniformVec3(shaderID, "backLightColor", backLight.color);
+}
+
+void uploadLightIntensities(GLuint shaderID)
+{
+	setUniformFloat(shaderID, "keyLightIntensity", keyLight.enabled ? keyLight.intensity : 0.0f);
+	setUniformFloat(shaderID, "fillLightIntensity", fillLight.enabled ? fillLight.intensity : 0.0f);
+	setUniformFloat(shaderID, "backLightIntensity", backLight.enabled ? backLight.intensity : 0.0f);
+}
+
+GLuint compileShader(GLenum shaderType, const GLchar *source)
+{
+	GLuint shader = glCreateShader(shaderType);
+	glShaderSource(shader, 1, &source, NULL);
+	glCompileShader(shader);
+	checkShaderCompileErrors(shader, shaderType == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT");
+	return shader;
+}
+
+void checkShaderCompileErrors(GLuint shader, const std::string &type)
+{
+	GLint success;
+	GLchar infoLog[512];
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(shader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::" << type << "::COMPILATION_FAILED\n"
+			<< infoLog << std::endl;
+	}
 }
 
 void updateThreePointLighting()
@@ -655,20 +647,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 	handleScaleKeys(key);
 
 	updateThreePointLighting();
-
 	glUseProgram(gShaderID);
-
-	glUniform1f(
-			glGetUniformLocation(gShaderID, "keyLightIntensity"),
-			keyLight.enabled ? keyLight.intensity : 0.0f);
-
-	glUniform1f(
-			glGetUniformLocation(gShaderID, "fillLightIntensity"),
-			fillLight.enabled ? fillLight.intensity : 0.0f);
-
-	glUniform1f(
-			glGetUniformLocation(gShaderID, "backLightIntensity"),
-			backLight.enabled ? backLight.intensity : 0.0f);
+	uploadLightPositions(gShaderID);
+	uploadLightIntensities(gShaderID);
 }
 
 void handleRotationKeys(int key)
@@ -729,40 +710,16 @@ void handleScaleKeys(int key)
 
 int setupShader()
 {
-
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-	GLint success;
-	GLchar infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
-							<< infoLog << std::endl;
-	}
-
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
-							<< infoLog << std::endl;
-	}
+	GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
+	GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
 	GLuint shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
 	glLinkProgram(shaderProgram);
 
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
+	GLint success;
+	GLchar infoLog[512];
 	{
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
