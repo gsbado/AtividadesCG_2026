@@ -80,13 +80,13 @@ Light keyLight = {
 Light fillLight = {
 		glm::vec3(-2.0f, 1.0f, 2.0f),
 		glm::vec3(0.6f, 0.6f, 0.8f),
-		0.25f,
+		0.15f,
 		true};
 
 Light backLight = {
 		glm::vec3(0.0f, 3.0f, -2.0f),
-		glm::vec3(0.8f, 0.8f, 0.8f),
-		0.35f,
+		glm::vec3(0.7f, 0.8f, 1.0f),
+		0.5f,
 		true};
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
@@ -738,15 +738,15 @@ void showControlsGuide()
 	cout << " Bem-vindo a Atividade Vivencial 02 " << endl;
 	cout << " Controle seu objeto utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
-	cout << " Selecionar : TAB (troca cubo ativo)" << endl;
+	cout << " Selecionar : TAB (troca objeto ativo)" << endl;
 	cout << " Movimento X : A | D  ou  <- | ->" << endl;
 	cout << " Movimento Y : I | J  ou  /\\ | \\/" << endl;
 	cout << " Movimento Z : W | S" << endl;
 	cout << " Rotacao     : X | Y | Z" << endl;
 	cout << " Escala      : [ | ]" << endl;
-	cout << " Luz Key     : 1" << endl;
-	cout << " Luz Fill    : 2" << endl;
-	cout << " Luz Back    : 3" << endl;
+	cout << " Key Light   : 1" << endl;
+	cout << " Fill Light  : 2" << endl;
+	cout << " Back Light  : 3" << endl;
 	cout << " Sair        : ESC" << endl;
 	cout << "==========================================" << endl;
 	cout << endl;
