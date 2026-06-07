@@ -53,6 +53,12 @@ struct Camera
 	glm::vec3 up;
 	float yaw;
 	float pitch;
+	float lastX;
+	float lastY;
+
+	bool firstMouse;
+
+	float sensitivity;
 
 	glm::mat4 getViewMatrix() const
 	{
@@ -130,6 +136,16 @@ struct Camera
 
 		updateOrientation();
 	}
+
+	void processMouseMovement(
+			float xoffset,
+			float yoffset)
+	{
+		xoffset *= sensitivity;
+		yoffset *= sensitivity;
+
+		rotate(xoffset, yoffset);
+	}
 };
 
 // ---- VARIÁVEIS GLOBAIS ----
@@ -155,10 +171,6 @@ const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
 const float ROTATION_STEP = 0.1f;
 const float CAMERA_SPEED = 0.1f;
-float lastX = WIDTH / 2.0f;
-float lastY = HEIGHT / 2.0f;
-bool firstMouse = true;
-float sensitivity = 0.1f;
 
 GLuint gShaderID = 0;
 
@@ -185,7 +197,14 @@ Camera camera = {
 		glm::vec3(0.0f, 0.0f, -1.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f),
 		-90.0f,
-		0.0f};
+		0.0f,
+
+		WIDTH / 2.0f,
+		HEIGHT / 2.0f,
+
+		true,
+
+		0.1f};
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -717,23 +736,22 @@ void renderObject3D(const Object3D &object, GLuint objectVAO, GLint modelMatrixL
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
-	if (firstMouse)
+	if (camera.firstMouse)
 	{
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
+		camera.lastX = xpos;
+		camera.lastY = ypos;
+		camera.firstMouse = false;
 	}
 
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos;
+	float xoffset = xpos - camera.lastX;
+	float yoffset = camera.lastY - ypos;
 
-	lastX = xpos;
-	lastY = ypos;
+	camera.lastX = xpos;
+	camera.lastY = ypos;
 
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	camera.rotate(xoffset, yoffset);
+	camera.processMouseMovement(
+			xoffset,
+			yoffset);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
