@@ -1,4 +1,4 @@
-/* First Person Camera - código adaptado de HelloIllumination3D.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
+/* First Person Camera - código adaptado de Vivencial02.cpp e https://learnopengl.com/#!Getting-started/Hello-Triangle
  *
  * Modificado por Gabriela Spanemberg Bado
  * para a disciplina de Computação Gráfica - Unisinos
@@ -24,7 +24,7 @@
 using namespace std;
 
 // ---- STRUCTS ----
-struct Cube
+struct Object3D
 {
 	glm::vec3 position;
 	glm::vec3 scale;
@@ -38,8 +38,16 @@ struct Material
 	glm::vec3 specular;
 };
 
+struct Light
+{
+	glm::vec3 position;
+	glm::vec3 color;
+	float intensity;
+	bool enabled;
+};
+
 // ---- VARIÁVEIS GLOBAIS ----
-vector<Cube> cubes = {
+vector<Object3D> objects = {
 		{glm::vec3(-0.5f, -0.5f, 0.0f),
 		 glm::vec3(0.4f),
 		 glm::vec3(0.0f)},
@@ -53,13 +61,33 @@ vector<Cube> cubes = {
 		 glm::vec3(0.4f),
 		 glm::vec3(0.0f)}};
 
-int selectedCubeIndex = 0;
+int selectedObjectIndex = 0;
 int nVertices = 0;
 
 const GLuint WIDTH = 1000, HEIGHT = 1000;
 const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
 const float ROTATION_STEP = 0.1f;
+
+GLuint gShaderID = 0;
+
+Light keyLight = {
+		glm::vec3(2.0f, 2.0f, 2.0f),
+		glm::vec3(1.0f, 1.0f, 1.0f),
+		0.8f,
+		true};
+
+Light fillLight = {
+		glm::vec3(-2.0f, 1.0f, 2.0f),
+		glm::vec3(0.6f, 0.6f, 0.8f),
+		0.15f,
+		true};
+
+Light backLight = {
+		glm::vec3(0.0f, 3.0f, -2.0f),
+		glm::vec3(0.7f, 0.8f, 1.0f),
+		0.5f,
+		true};
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -69,14 +97,26 @@ void handleMovementKeys(int key);
 void handleScaleKeys(int key);
 
 void prepareFrame();
-glm::mat4 buildCubeModelMatrix(const Cube &cube);
-Cube &getSelectedCube();
+glm::mat4 buildObject3DModelMatrix(const Object3D &object);
+Object3D &getSelectedObject3D();
+
+glm::vec3 parseVec3(std::istringstream &ss);
+void setUniformVec3(GLuint shaderID, const char *name, const glm::vec3 &value);
+void setUniformFloat(GLuint shaderID, const char *name, float value);
+void uploadMaterialToShader(GLuint shaderID, const Material &material);
+void uploadLightPositions(GLuint shaderID);
+void uploadLightColors(GLuint shaderID);
+void uploadLightIntensities(GLuint shaderID);
+GLuint compileShader(GLenum shaderType, const GLchar *source);
+void checkShaderCompileErrors(GLuint shader, const std::string &type);
 
 void showControlsGuide();
 
-void renderCube(
-		const Cube &cube,
-		GLuint cubeVAO,
+void updateThreePointLighting();
+
+void renderObject3D(
+		const Object3D &object,
+		GLuint objectVAO,
 		GLint modelMatrixLocation);
 
 int setupShader();
@@ -112,26 +152,102 @@ const GLchar *fragmentShaderSource = "#version 450\n"
 																		 "in vec3 fragNormal;\n"
 																		 "in vec3 fragPosition;\n"
 																		 "out vec4 color;\n"
+
 																		 "uniform sampler2D texture1;\n"
+
 																		 "uniform vec3 materialAmbient;\n"
 																		 "uniform vec3 materialDiffuse;\n"
 																		 "uniform vec3 materialSpecular;\n"
-																		 "uniform vec3 lightPosition;\n"
+
+																		 "uniform vec3 keyLightPosition;\n"
+																		 "uniform vec3 fillLightPosition;\n"
+																		 "uniform vec3 backLightPosition;\n"
+
+																		 "uniform vec3 keyLightColor;\n"
+																		 "uniform vec3 fillLightColor;\n"
+																		 "uniform vec3 backLightColor;\n"
+
+																		 "uniform float keyLightIntensity;\n"
+																		 "uniform float fillLightIntensity;\n"
+																		 "uniform float backLightIntensity;\n"
+
 																		 "uniform vec3 viewPosition;\n"
+
+																		 "float attenuation(float distance)\n"
+																		 "{\n"
+																		 "    float constant = 1.0;\n"
+																		 "    float linear = 0.14;\n"
+																		 "    float quadratic = 0.07;\n"
+
+																		 "    return 1.0 / (constant + linear * distance + quadratic * distance * distance);\n"
+																		 "}\n"
+
+																		 "vec3 calculateLight(\n"
+																		 "    vec3 lightPosition,\n"
+																		 "    vec3 lightColor,\n"
+																		 "    float lightIntensity,\n"
+																		 "    vec3 normal,\n"
+																		 "    vec3 fragPosition,\n"
+																		 "    vec3 viewDir)\n"
+																		 "{\n"
+
+																		 "    vec3 lightDir = normalize(lightPosition - fragPosition);\n"
+
+																		 "    float distance = length(lightPosition - fragPosition);\n"
+																		 "    float att = attenuation(distance);\n"
+
+																		 "    vec3 reflectDir = reflect(-lightDir, normal);\n"
+
+																		 "    float diff = max(dot(normal, lightDir), 0.0);\n"
+
+																		 "    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);\n"
+
+																		 "    vec3 ambient = materialAmbient * lightColor * lightIntensity;\n"
+
+																		 "    vec3 diffuse = materialDiffuse * diff * lightColor * lightIntensity;\n"
+
+																		 "    vec3 specular = materialSpecular * spec * lightColor * lightIntensity;\n"
+
+																		 "    return ambient + (diffuse + specular) * att;\n"
+																		 "}\n"
+
 																		 "void main()\n"
 																		 "{\n"
-																		 "vec3 normal = normalize(fragNormal);\n"
-																		 "vec3 lightDirection = normalize(lightPosition - fragPosition);\n"
-																		 "vec3 viewDirection = normalize(viewPosition - fragPosition);\n"
-																		 "vec3 reflectionDirection = reflect(-lightDirection, normal);\n"
-																		 "vec3 ambient = materialAmbient;\n"
-																		 "float diffuseIntensity = max(dot(normal, lightDirection), 0.0);\n"
-																		 "vec3 diffuse = materialDiffuse * diffuseIntensity;\n"
-																		 "float specularIntensity = pow(max(dot(viewDirection, reflectionDirection), 0.0),32.0);\n"
-																		 "vec3 specular = materialSpecular * specularIntensity;\n"
-																		 "vec3 phong = ambient + diffuse + specular;\n"
-																		 "vec4 textureColor = texture(texture1, fragTexCoord);\n"
-																		 "color = vec4(phong, 1.0) * textureColor;\n}\n\0";
+
+																		 "    vec3 normal = normalize(fragNormal);\n"
+
+																		 "    vec3 viewDir = normalize(viewPosition - fragPosition);\n"
+
+																		 "    vec3 phong = vec3(0.0);\n"
+
+																		 "    phong += calculateLight(\n"
+																		 "        keyLightPosition,\n"
+																		 "        keyLightColor,\n"
+																		 "        keyLightIntensity,\n"
+																		 "        normal,\n"
+																		 "        fragPosition,\n"
+																		 "        viewDir);\n"
+
+																		 "    phong += calculateLight(\n"
+																		 "        fillLightPosition,\n"
+																		 "        fillLightColor,\n"
+																		 "        fillLightIntensity,\n"
+																		 "        normal,\n"
+																		 "        fragPosition,\n"
+																		 "        viewDir);\n"
+
+																		 "    phong += calculateLight(\n"
+																		 "        backLightPosition,\n"
+																		 "        backLightColor,\n"
+																		 "        backLightIntensity,\n"
+																		 "        normal,\n"
+																		 "        fragPosition,\n"
+																		 "        viewDir);\n"
+
+																		 "    vec4 texColor = texture(texture1, fragTexCoord);\n"
+
+																		 "    color = vec4(phong, 1.0) * texColor;\n"
+																		 "}\0";
 
 // ---- FUNÇÃO MAIN ----
 int main()
@@ -160,6 +276,7 @@ int main()
 	glViewport(0, 0, width, height);
 
 	GLuint shaderID = setupShader();
+	gShaderID = shaderID;
 	GLuint VAO = loadSimpleOBJ("../assets/Modelos3D/Suzanne/Suzanne.obj", nVertices);
 	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
 	GLuint textureID = loadTexture("../assets/Modelos3D/Suzanne/" + textureName);
@@ -169,31 +286,13 @@ int main()
 
 	glm::vec3 cameraPosition(0.0f, 2.0f, 3.0f);
 
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "materialAmbient"),
-			1,
-			glm::value_ptr(material.ambient));
+	uploadMaterialToShader(shaderID, material);
+	setUniformVec3(shaderID, "viewPosition", cameraPosition);
 
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "materialDiffuse"),
-			1,
-			glm::value_ptr(material.diffuse));
-
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "materialSpecular"),
-			1,
-			glm::value_ptr(material.specular));
-
-	glUniform3f(
-			glGetUniformLocation(shaderID, "lightPosition"),
-			2.0f,
-			2.0f,
-			2.0f);
-
-	glUniform3fv(
-			glGetUniformLocation(shaderID, "viewPosition"),
-			1,
-			glm::value_ptr(cameraPosition));
+	updateThreePointLighting();
+	uploadLightPositions(shaderID);
+	uploadLightColors(shaderID);
+	uploadLightIntensities(shaderID);
 
 	glUniform1i(glGetUniformLocation(shaderID, "texture1"), 0);
 	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
@@ -223,20 +322,22 @@ int main()
 
 		prepareFrame();
 
+		updateThreePointLighting();
+		uploadLightPositions(shaderID);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureID);
 
-		for (const Cube &cube : cubes)
+		for (const Object3D &object : objects)
 		{
-			renderCube(
-					cube,
+			renderObject3D(
+					object,
 					VAO,
 					modelMatrixLocation);
 		}
 
 		glfwSwapBuffers(window);
 	}
-
 	glDeleteTextures(1, &textureID);
 	glDeleteVertexArrays(1, &VAO);
 
@@ -274,6 +375,13 @@ string loadTexturePathFromMTL(const string &mtlPath)
 	return "";
 }
 
+glm::vec3 parseVec3(std::istringstream &ss)
+{
+	glm::vec3 value(0.0f);
+	ss >> value.r >> value.g >> value.b;
+	return value;
+}
+
 Material loadMaterialFromMTL(const string &mtlPath)
 {
 	Material material = {
@@ -300,15 +408,15 @@ Material loadMaterialFromMTL(const string &mtlPath)
 
 		if (word == "Ka")
 		{
-			ss >> material.ambient.r >> material.ambient.g >> material.ambient.b;
+			material.ambient = parseVec3(ss);
 		}
 		else if (word == "Kd")
 		{
-			ss >> material.diffuse.r >> material.diffuse.g >> material.diffuse.b;
+			material.diffuse = parseVec3(ss);
 		}
 		else if (word == "Ks")
 		{
-			ss >> material.specular.r >> material.specular.g >> material.specular.b;
+			material.specular = parseVec3(ss);
 		}
 	}
 
@@ -365,44 +473,125 @@ void prepareFrame()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-Cube &getSelectedCube()
+Object3D &getSelectedObject3D()
 {
-	return cubes[selectedCubeIndex];
+	return objects[selectedObjectIndex];
 }
 
-glm::mat4 buildCubeModelMatrix(const Cube &cube)
+glm::mat4 buildObject3DModelMatrix(const Object3D &object)
 {
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 
-	modelMatrix = glm::translate(
-			modelMatrix,
-			cube.position);
-
-	modelMatrix = glm::scale(
-			modelMatrix,
-			cube.scale);
-
-	modelMatrix = glm::rotate(
-			modelMatrix,
-			cube.rotation.x,
-			glm::vec3(1.0f, 0.0f, 0.0f));
-
-	modelMatrix = glm::rotate(
-			modelMatrix,
-			cube.rotation.y,
-			glm::vec3(0.0f, 1.0f, 0.0f));
-
-	modelMatrix = glm::rotate(
-			modelMatrix,
-			cube.rotation.z,
-			glm::vec3(0.0f, 0.0f, 1.0f));
+	modelMatrix = glm::translate(modelMatrix, object.position);
+	modelMatrix = glm::scale(modelMatrix, object.scale);
+	modelMatrix = glm::rotate(modelMatrix, object.rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, object.rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, object.rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	return modelMatrix;
 }
 
-void renderCube(const Cube &cube, GLuint cubeVAO, GLint modelMatrixLocation)
+void setUniformVec3(GLuint shaderID, const char *name, const glm::vec3 &value)
 {
-	glm::mat4 modelMatrix = buildCubeModelMatrix(cube);
+	GLint location = glGetUniformLocation(shaderID, name);
+	glUniform3fv(location, 1, glm::value_ptr(value));
+}
+
+void setUniformFloat(GLuint shaderID, const char *name, float value)
+{
+	GLint location = glGetUniformLocation(shaderID, name);
+	glUniform1f(location, value);
+}
+
+void uploadMaterialToShader(GLuint shaderID, const Material &material)
+{
+	setUniformVec3(shaderID, "materialAmbient", material.ambient);
+	setUniformVec3(shaderID, "materialDiffuse", material.diffuse);
+	setUniformVec3(shaderID, "materialSpecular", material.specular);
+}
+
+void uploadLightPositions(GLuint shaderID)
+{
+	setUniformVec3(shaderID, "keyLightPosition", keyLight.position);
+	setUniformVec3(shaderID, "fillLightPosition", fillLight.position);
+	setUniformVec3(shaderID, "backLightPosition", backLight.position);
+}
+
+void uploadLightColors(GLuint shaderID)
+{
+	setUniformVec3(shaderID, "keyLightColor", keyLight.color);
+	setUniformVec3(shaderID, "fillLightColor", fillLight.color);
+	setUniformVec3(shaderID, "backLightColor", backLight.color);
+}
+
+void uploadLightIntensities(GLuint shaderID)
+{
+	setUniformFloat(shaderID, "keyLightIntensity", keyLight.enabled ? keyLight.intensity : 0.0f);
+	setUniformFloat(shaderID, "fillLightIntensity", fillLight.enabled ? fillLight.intensity : 0.0f);
+	setUniformFloat(shaderID, "backLightIntensity", backLight.enabled ? backLight.intensity : 0.0f);
+}
+
+GLuint compileShader(GLenum shaderType, const GLchar *source)
+{
+	GLuint shader = glCreateShader(shaderType);
+	glShaderSource(shader, 1, &source, NULL);
+	glCompileShader(shader);
+	checkShaderCompileErrors(shader, shaderType == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT");
+	return shader;
+}
+
+void checkShaderCompileErrors(GLuint shader, const std::string &type)
+{
+	GLint success;
+	GLchar infoLog[512];
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(shader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::" << type << "::COMPILATION_FAILED\n"
+			<< infoLog << std::endl;
+	}
+}
+
+void updateThreePointLighting()
+{
+	Object3D &mainObject = getSelectedObject3D();
+
+	glm::vec3 center = mainObject.position;
+
+	float distance =
+			glm::max(
+					glm::max(
+							mainObject.scale.x,
+							mainObject.scale.y),
+					mainObject.scale.z) *
+			5.0f;
+
+	keyLight.position =
+			center +
+			glm::vec3(
+					distance,
+					distance,
+					distance);
+
+	fillLight.position =
+			center +
+			glm::vec3(
+					-distance,
+					distance * 0.5f,
+					distance);
+
+	backLight.position =
+			center +
+			glm::vec3(
+					0.0f,
+					distance,
+					-distance);
+}
+
+void renderObject3D(const Object3D &object, GLuint objectVAO, GLint modelMatrixLocation)
+{
+	glm::mat4 modelMatrix = buildObject3DModelMatrix(object);
 
 	glUniformMatrix4fv(
 			modelMatrixLocation,
@@ -410,7 +599,7 @@ void renderCube(const Cube &cube, GLuint cubeVAO, GLint modelMatrixLocation)
 			GL_FALSE,
 			glm::value_ptr(modelMatrix));
 
-	glBindVertexArray(cubeVAO);
+	glBindVertexArray(objectVAO);
 	glDrawArrays(GL_TRIANGLES, 0, nVertices);
 	glBindVertexArray(0);
 }
@@ -425,113 +614,112 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_TAB)
 	{
-		selectedCubeIndex =
-				(selectedCubeIndex + 1) % cubes.size();
+		selectedObjectIndex =
+				(selectedObjectIndex + 1) % objects.size();
 
-		cout << "Cube selected: "
-				 << selectedCubeIndex + 1
+		cout << "Object3D selected: "
+				 << selectedObjectIndex + 1
 				 << endl;
 
 		return;
 	}
 
+	if (key == GLFW_KEY_1)
+	{
+		keyLight.enabled = !keyLight.enabled;
+		cout << "Key Light: " << (keyLight.enabled ? "ON" : "OFF") << endl;
+	}
+
+	if (key == GLFW_KEY_2)
+	{
+		fillLight.enabled = !fillLight.enabled;
+		cout << "Fill Light: " << (fillLight.enabled ? "ON" : "OFF") << endl;
+	}
+
+	if (key == GLFW_KEY_3)
+	{
+		backLight.enabled = !backLight.enabled;
+		cout << "Back Light: " << (backLight.enabled ? "ON" : "OFF") << endl;
+	}
+
 	handleRotationKeys(key);
 	handleMovementKeys(key);
 	handleScaleKeys(key);
+
+	updateThreePointLighting();
+	glUseProgram(gShaderID);
+	uploadLightPositions(gShaderID);
+	uploadLightIntensities(gShaderID);
 }
 
 void handleRotationKeys(int key)
 {
-	Cube &cube = getSelectedCube();
+	Object3D &object = getSelectedObject3D();
 
 	if (key == GLFW_KEY_X)
-		cube.rotation.x += ROTATION_STEP;
+		object.rotation.x += ROTATION_STEP;
 
 	if (key == GLFW_KEY_Y)
-		cube.rotation.y += ROTATION_STEP;
+		object.rotation.y += ROTATION_STEP;
 
 	if (key == GLFW_KEY_Z)
-		cube.rotation.z += ROTATION_STEP;
+		object.rotation.z += ROTATION_STEP;
 }
 
 void handleMovementKeys(int key)
 {
-	Cube &cube = getSelectedCube();
+	Object3D &object = getSelectedObject3D();
 
 	if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT)
-		cube.position.x -= MOVEMENT_STEP;
+		object.position.x -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT)
-		cube.position.x += MOVEMENT_STEP;
+		object.position.x += MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_I || key == GLFW_KEY_UP)
-		cube.position.y += MOVEMENT_STEP;
+		object.position.y += MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_J || key == GLFW_KEY_DOWN)
-		cube.position.y -= MOVEMENT_STEP;
+		object.position.y -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_W)
-		cube.position.z -= MOVEMENT_STEP;
+		object.position.z -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_S)
-		cube.position.z += MOVEMENT_STEP;
+		object.position.z += MOVEMENT_STEP;
 }
 
 void handleScaleKeys(int key)
 {
-	Cube &cube = getSelectedCube();
+	Object3D &object = getSelectedObject3D();
 
 	if (key == GLFW_KEY_LEFT_BRACKET)
 	{
-		cube.scale.x = glm::max(cube.scale.x - SCALE_STEP, 0.2f);
-		cube.scale.y = glm::max(cube.scale.y - SCALE_STEP, 0.2f);
-		cube.scale.z = glm::max(cube.scale.z - SCALE_STEP, 0.2f);
+		object.scale.x = glm::max(object.scale.x - SCALE_STEP, 0.2f);
+		object.scale.y = glm::max(object.scale.y - SCALE_STEP, 0.2f);
+		object.scale.z = glm::max(object.scale.z - SCALE_STEP, 0.2f);
 	}
 
 	if (key == GLFW_KEY_RIGHT_BRACKET)
 	{
-		cube.scale.x = glm::min(cube.scale.x + SCALE_STEP, 1.2f);
-		cube.scale.y = glm::min(cube.scale.y + SCALE_STEP, 1.2f);
-		cube.scale.z = glm::min(cube.scale.z + SCALE_STEP, 1.2f);
+		object.scale.x = glm::min(object.scale.x + SCALE_STEP, 1.2f);
+		object.scale.y = glm::min(object.scale.y + SCALE_STEP, 1.2f);
+		object.scale.z = glm::min(object.scale.z + SCALE_STEP, 1.2f);
 	}
 }
 
 int setupShader()
 {
-
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-	glCompileShader(vertexShader);
-
-	GLint success;
-	GLchar infoLog[512];
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
-							<< infoLog << std::endl;
-	}
-
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-	glCompileShader(fragmentShader);
-
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
-							<< infoLog << std::endl;
-	}
+	GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
+	GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 
 	GLuint shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
 	glLinkProgram(shaderProgram);
 
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success)
+	GLint success;
+	GLchar infoLog[512];
 	{
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
@@ -547,15 +735,18 @@ void showControlsGuide()
 {
 	cout << endl;
 	cout << "==========================================" << endl;
-	cout << " Bem-vindo ao First Person Camera! " << endl;
-	cout << " Controle seu cubo utilizando as seguintes teclas:" << endl;
+	cout << " Bem-vindo a First Person Camera! " << endl;
+	cout << " Controle seu objeto utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
-	cout << " Selecionar : TAB (troca cubo ativo)" << endl;
+	cout << " Selecionar : TAB (troca objeto ativo)" << endl;
 	cout << " Movimento X : A | D  ou  <- | ->" << endl;
 	cout << " Movimento Y : I | J  ou  /\\ | \\/" << endl;
 	cout << " Movimento Z : W | S" << endl;
 	cout << " Rotacao     : X | Y | Z" << endl;
 	cout << " Escala      : [ | ]" << endl;
+	cout << " Key Light   : 1" << endl;
+	cout << " Fill Light  : 2" << endl;
+	cout << " Back Light  : 3" << endl;
 	cout << " Sair        : ESC" << endl;
 	cout << "==========================================" << endl;
 	cout << endl;
