@@ -59,6 +59,32 @@ struct Camera
 			position + front,
 			up);
 	}
+
+	void moveForward(float speed)
+{
+	position += front * speed;
+}
+
+void moveBackward(float speed)
+{
+	position -= front * speed;
+}
+
+void moveLeft(float speed)
+{
+	position -=
+		glm::normalize(
+			glm::cross(front, up))
+		* speed;
+}
+
+void moveRight(float speed)
+{
+	position +=
+		glm::normalize(
+			glm::cross(front, up))
+		* speed;
+}
 };
 
 // ---- VARIÁVEIS GLOBAIS ----
@@ -83,6 +109,7 @@ const GLuint WIDTH = 1000, HEIGHT = 1000;
 const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
 const float ROTATION_STEP = 0.1f;
+const float CAMERA_SPEED = 0.1f;
 
 GLuint gShaderID = 0;
 
@@ -146,6 +173,8 @@ GLuint loadTexture(const string &texturePath);
 GLuint loadSimpleOBJ(string filePath, int &nVertices);
 
 Material loadMaterialFromMTL(const string &mtlPath);
+
+void handleCameraMovement(int key);
 
 // ---- SHADERS ----
 const GLchar *vertexShaderSource = "#version 450\n"
@@ -661,6 +690,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 	handleRotationKeys(key);
 	handleMovementKeys(key);
 	handleScaleKeys(key);
+	handleCameraMovement(key);
 
 	updateThreePointLighting();
 	glUseProgram(gShaderID);
@@ -686,16 +716,16 @@ void handleMovementKeys(int key)
 {
 	Object3D &object = getSelectedObject3D();
 
-	if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT)
+	if (key == GLFW_KEY_LEFT)
 		object.position.x -= MOVEMENT_STEP;
 
-	if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT)
+	if (key == GLFW_KEY_RIGHT)
 		object.position.x += MOVEMENT_STEP;
 
-	if (key == GLFW_KEY_I || key == GLFW_KEY_UP)
+	if (key == GLFW_KEY_UP)
 		object.position.y += MOVEMENT_STEP;
 
-	if (key == GLFW_KEY_J || key == GLFW_KEY_DOWN)
+	if (key == GLFW_KEY_DOWN)
 		object.position.y -= MOVEMENT_STEP;
 
 	if (key == GLFW_KEY_W)
@@ -722,6 +752,21 @@ void handleScaleKeys(int key)
 		object.scale.y = glm::min(object.scale.y + SCALE_STEP, 1.2f);
 		object.scale.z = glm::min(object.scale.z + SCALE_STEP, 1.2f);
 	}
+}
+
+void handleCameraMovement(int key)
+{
+	if (key == GLFW_KEY_W)
+		camera.moveForward(CAMERA_SPEED);
+
+	if (key == GLFW_KEY_S)
+		camera.moveBackward(CAMERA_SPEED);
+
+	if (key == GLFW_KEY_A)
+		camera.moveLeft(CAMERA_SPEED);
+
+	if (key == GLFW_KEY_D)
+		camera.moveRight(CAMERA_SPEED);
 }
 
 int setupShader()
