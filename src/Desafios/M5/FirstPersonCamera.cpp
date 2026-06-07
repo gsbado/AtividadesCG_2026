@@ -155,6 +155,10 @@ const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
 const float ROTATION_STEP = 0.1f;
 const float CAMERA_SPEED = 0.1f;
+float lastX = WIDTH / 2.0f;
+float lastY = HEIGHT / 2.0f;
+bool firstMouse = true;
+float sensitivity = 0.1f;
 
 GLuint gShaderID = 0;
 
@@ -185,6 +189,7 @@ Camera camera = {
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 
 void handleRotationKeys(int key);
 void handleMovementKeys(int key);
@@ -352,8 +357,10 @@ int main()
 
 	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Câmera em Primeira Pessoa -- Gabriela Bado", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	camera.updateOrientation();
 	glfwSetKeyCallback(window, key_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -708,6 +715,27 @@ void renderObject3D(const Object3D &object, GLuint objectVAO, GLint modelMatrixL
 	glBindVertexArray(0);
 }
 
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
+{
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+
+	lastX = xpos;
+	lastY = ypos;
+
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	camera.rotate(xoffset, yoffset);
+}
+
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
 	if (action != GLFW_PRESS && action != GLFW_REPEAT)
@@ -853,7 +881,8 @@ void showControlsGuide()
 	cout << " Controle seu objeto utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
 	cout << " Selecionar         : TAB (troca objeto ativo)" << endl;
-	cout << " Camera             : W | A | S | D" << endl;
+	cout << " Camera Movimento   : W | A | S | D" << endl;
+	cout << " Camera Olhar       : Movimento do Mouse" << endl;
 	cout << " Movimento Objeto X : <- | ->" << endl;
 	cout << " Movimento Objeto Y :  /\\ | \\/" << endl;
 	cout << " Rotacao            : X | Y | Z" << endl;
