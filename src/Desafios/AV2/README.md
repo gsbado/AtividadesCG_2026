@@ -65,6 +65,8 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ## 🖥️ Preview
 
+[▶ Ver demonstração em vídeo](../../../assets/demos/DEMOVivencial02.mp4)
+
 ![Vivencial02](../../../assets/demos/Vivencial02.png)
 
 ![Vivencial02_2](../../../assets/demos/Vivencial02_2.png)
