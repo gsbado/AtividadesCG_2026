@@ -46,6 +46,21 @@ struct Light
 	bool enabled;
 };
 
+struct Camera
+{
+	glm::vec3 position;
+	glm::vec3 front;
+	glm::vec3 up;
+
+	glm::mat4 getViewMatrix() const
+	{
+		return glm::lookAt(
+			position,
+			position + front,
+			up);
+	}
+};
+
 // ---- VARIÁVEIS GLOBAIS ----
 vector<Object3D> objects = {
 		{glm::vec3(-0.5f, -0.5f, 0.0f),
@@ -88,6 +103,12 @@ Light backLight = {
 		glm::vec3(0.7f, 0.8f, 1.0f),
 		0.5f,
 		true};
+
+Camera camera = {
+	glm::vec3(0.0f, 2.0f, 3.0f),
+	glm::vec3(0.0f, 0.0f, -1.0f),
+	glm::vec3(0.0f, 1.0f, 0.0f)
+};
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -284,10 +305,8 @@ int main()
 
 	glUseProgram(shaderID);
 
-	glm::vec3 cameraPosition(0.0f, 2.0f, 3.0f);
-
 	uploadMaterialToShader(shaderID, material);
-	setUniformVec3(shaderID, "viewPosition", cameraPosition);
+	setUniformVec3(shaderID, "viewPosition", camera.position);
 
 	updateThreePointLighting();
 	uploadLightPositions(shaderID);
@@ -297,10 +316,7 @@ int main()
 	glUniform1i(glGetUniformLocation(shaderID, "texture1"), 0);
 	GLint modelMatrixLocation = glGetUniformLocation(shaderID, "model");
 
-	glm::mat4 view = glm::lookAt(
-			glm::vec3(0.0f, 2.0f, 3.0f),
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 view = camera.getViewMatrix();
 	GLint viewLoc = glGetUniformLocation(shaderID, "view");
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
