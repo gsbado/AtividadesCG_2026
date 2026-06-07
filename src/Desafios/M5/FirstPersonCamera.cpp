@@ -51,40 +51,85 @@ struct Camera
 	glm::vec3 position;
 	glm::vec3 front;
 	glm::vec3 up;
+	float yaw;
+	float pitch;
 
 	glm::mat4 getViewMatrix() const
 	{
 		return glm::lookAt(
-			position,
-			position + front,
-			up);
+				position,
+				position + front,
+				up);
 	}
 
 	void moveForward(float speed)
-{
-	position += front * speed;
-}
+	{
+		position += front * speed;
+	}
 
-void moveBackward(float speed)
-{
-	position -= front * speed;
-}
+	void moveBackward(float speed)
+	{
+		position -= front * speed;
+	}
 
-void moveLeft(float speed)
-{
-	position -=
-		glm::normalize(
-			glm::cross(front, up))
-		* speed;
-}
+	void moveLeft(float speed)
+	{
+		position -=
+				glm::normalize(
+						glm::cross(front, up)) *
+				speed;
+	}
 
-void moveRight(float speed)
-{
-	position +=
-		glm::normalize(
-			glm::cross(front, up))
-		* speed;
-}
+	void moveRight(float speed)
+	{
+		position +=
+				glm::normalize(
+						glm::cross(front, up)) *
+				speed;
+	}
+
+	void updateOrientation()
+	{
+		glm::vec3 direction;
+
+		direction.x =
+				cos(glm::radians(yaw)) *
+				cos(glm::radians(pitch));
+
+		direction.y =
+				sin(glm::radians(pitch));
+
+		direction.z =
+				sin(glm::radians(yaw)) *
+				cos(glm::radians(pitch));
+
+		front = glm::normalize(direction);
+
+		glm::vec3 right =
+				glm::normalize(
+						glm::cross(
+								front,
+								glm::vec3(0.0f, 1.0f, 0.0f)));
+
+		up =
+				glm::normalize(
+						glm::cross(
+								right,
+								front));
+	}
+	void rotate(float yawOffset, float pitchOffset)
+	{
+		yaw += yawOffset;
+		pitch += pitchOffset;
+
+		if (pitch > 89.0f)
+			pitch = 89.0f;
+
+		if (pitch < -89.0f)
+			pitch = -89.0f;
+
+		updateOrientation();
+	}
 };
 
 // ---- VARIÁVEIS GLOBAIS ----
@@ -132,10 +177,11 @@ Light backLight = {
 		true};
 
 Camera camera = {
-	glm::vec3(0.0f, 2.0f, 3.0f),
-	glm::vec3(0.0f, 0.0f, -1.0f),
-	glm::vec3(0.0f, 1.0f, 0.0f)
-};
+		glm::vec3(0.0f, 2.0f, 3.0f),
+		glm::vec3(0.0f, 0.0f, -1.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		-90.0f,
+		0.0f};
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -306,7 +352,7 @@ int main()
 
 	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Câmera em Primeira Pessoa -- Gabriela Bado", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
-
+	camera.updateOrientation();
 	glfwSetKeyCallback(window, key_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -366,6 +412,19 @@ int main()
 		glfwPollEvents();
 
 		prepareFrame();
+
+		view = camera.getViewMatrix();
+
+		glUniformMatrix4fv(
+				viewLoc,
+				1,
+				GL_FALSE,
+				glm::value_ptr(view));
+
+		setUniformVec3(
+				shaderID,
+				"viewPosition",
+				camera.position);
 
 		updateThreePointLighting();
 		uploadLightPositions(shaderID);
@@ -594,7 +653,7 @@ void checkShaderCompileErrors(GLuint shader, const std::string &type)
 	{
 		glGetShaderInfoLog(shader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::" << type << "::COMPILATION_FAILED\n"
-			<< infoLog << std::endl;
+							<< infoLog << std::endl;
 	}
 }
 
@@ -727,12 +786,6 @@ void handleMovementKeys(int key)
 
 	if (key == GLFW_KEY_DOWN)
 		object.position.y -= MOVEMENT_STEP;
-
-	if (key == GLFW_KEY_W)
-		object.position.z -= MOVEMENT_STEP;
-
-	if (key == GLFW_KEY_S)
-		object.position.z += MOVEMENT_STEP;
 }
 
 void handleScaleKeys(int key)
@@ -799,16 +852,16 @@ void showControlsGuide()
 	cout << " Bem-vindo a First Person Camera! " << endl;
 	cout << " Controle seu objeto utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
-	cout << " Selecionar : TAB (troca objeto ativo)" << endl;
-	cout << " Movimento X : A | D  ou  <- | ->" << endl;
-	cout << " Movimento Y : I | J  ou  /\\ | \\/" << endl;
-	cout << " Movimento Z : W | S" << endl;
-	cout << " Rotacao     : X | Y | Z" << endl;
-	cout << " Escala      : [ | ]" << endl;
-	cout << " Key Light   : 1" << endl;
-	cout << " Fill Light  : 2" << endl;
-	cout << " Back Light  : 3" << endl;
-	cout << " Sair        : ESC" << endl;
+	cout << " Selecionar         : TAB (troca objeto ativo)" << endl;
+	cout << " Camera             : W | A | S | D" << endl;
+	cout << " Movimento Objeto X : <- | ->" << endl;
+	cout << " Movimento Objeto Y :  /\\ | \\/" << endl;
+	cout << " Rotacao            : X | Y | Z" << endl;
+	cout << " Escala             : [ | ]" << endl;
+	cout << " Key Light          : 1" << endl;
+	cout << " Fill Light         : 2" << endl;
+	cout << " Back Light         : 3" << endl;
+	cout << " Sair               : ESC" << endl;
 	cout << "==========================================" << endl;
 	cout << endl;
 }
