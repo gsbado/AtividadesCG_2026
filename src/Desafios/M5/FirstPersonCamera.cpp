@@ -209,10 +209,12 @@ Camera camera = {
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
 
 void handleRotationKeys(int key);
 void handleMovementKeys(int key);
 void handleScaleKeys(int key);
+void processCameraInput(GLFWwindow *window);
 
 void prepareFrame();
 glm::mat4 buildObject3DModelMatrix(const Object3D &object);
@@ -243,8 +245,6 @@ GLuint loadTexture(const string &texturePath);
 GLuint loadSimpleOBJ(string filePath, int &nVertices);
 
 Material loadMaterialFromMTL(const string &mtlPath);
-
-void handleCameraMovement(int key);
 
 // ---- SHADERS ----
 const GLchar *vertexShaderSource = "#version 450\n"
@@ -376,10 +376,11 @@ int main()
 
 	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Câmera em Primeira Pessoa -- Gabriela Bado", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	camera.updateOrientation();
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -436,6 +437,7 @@ int main()
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
+		processCameraInput(window);
 
 		prepareFrame();
 
@@ -736,6 +738,9 @@ void renderObject3D(const Object3D &object, GLuint objectVAO, GLint modelMatrixL
 
 void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
+	if (glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_DISABLED)
+		return;
+
 	if (camera.firstMouse)
 	{
 		camera.lastX = xpos;
@@ -749,9 +754,28 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 	camera.lastX = xpos;
 	camera.lastY = ypos;
 
-	camera.processMouseMovement(
-			xoffset,
-			yoffset);
+	camera.processMouseMovement(xoffset, yoffset);
+}
+
+void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{
+		if (glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_DISABLED)
+		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			camera.firstMouse = true;
+			cout << "Mouse capturado. Clique direito para liberar o cursor." << endl;
+		}
+	}
+	else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+	{
+		if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
+		{
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			cout << "Mouse liberado. Clique esquerdo dentro da janela para capturar novamente." << endl;
+		}
+	}
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
@@ -795,7 +819,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 	handleRotationKeys(key);
 	handleMovementKeys(key);
 	handleScaleKeys(key);
-	handleCameraMovement(key);
 
 	updateThreePointLighting();
 	glUseProgram(gShaderID);
@@ -853,18 +876,18 @@ void handleScaleKeys(int key)
 	}
 }
 
-void handleCameraMovement(int key)
+void processCameraInput(GLFWwindow *window)
 {
-	if (key == GLFW_KEY_W)
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		camera.moveForward(CAMERA_SPEED);
 
-	if (key == GLFW_KEY_S)
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		camera.moveBackward(CAMERA_SPEED);
 
-	if (key == GLFW_KEY_A)
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		camera.moveLeft(CAMERA_SPEED);
 
-	if (key == GLFW_KEY_D)
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		camera.moveRight(CAMERA_SPEED);
 }
 
@@ -880,6 +903,10 @@ int setupShader()
 
 	GLint success;
 	GLchar infoLog[512];
+
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+
+	if (!success)
 	{
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
@@ -899,6 +926,8 @@ void showControlsGuide()
 	cout << " Controle seu objeto utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
 	cout << " Selecionar         : TAB (troca objeto ativo)" << endl;
+	cout << " Capturar Mouse     : Clique Esquerdo" << endl;
+	cout << " Liberar Mouse      : Clique Direito" << endl;
 	cout << " Camera Movimento   : W | A | S | D" << endl;
 	cout << " Camera Olhar       : Movimento do Mouse" << endl;
 	cout << " Movimento Objeto X : <- | ->" << endl;
