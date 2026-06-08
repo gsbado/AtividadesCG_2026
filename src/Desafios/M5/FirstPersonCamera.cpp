@@ -46,11 +46,20 @@ struct Light
 	bool enabled;
 };
 
+enum Camera_Movement {
+	FORWARD,
+	BACKWARD,
+	LEFT,
+	RIGHT
+};
+
 struct Camera
 {
 	glm::vec3 position;
 	glm::vec3 front;
 	glm::vec3 up;
+	glm::vec3 right;
+	glm::vec3 worldUp;
 	float yaw;
 	float pitch;
 	float lastX;
@@ -58,113 +67,98 @@ struct Camera
 
 	bool firstMouse;
 
-	float sensitivity;
+	float movementSpeed;
+	float mouseSensitivity;
+
+	Camera(
+		glm::vec3 position = glm::vec3(0.0f, 0.0f, 4.0f),
+		glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
+		float yaw = -90.0f,
+		float pitch = 0.0f)
+		: position(position),
+		front(glm::vec3(0.0f, 0.0f, -1.0f)),
+		up(glm::vec3(0.0f, 1.0f, 0.0f)),
+		right(glm::vec3(0.0f, 0.0f, 0.0f)),
+		worldUp(up),
+		yaw(yaw),
+		pitch(pitch),
+		lastX(0.0f),
+		lastY(0.0f),
+		firstMouse(true),
+		movementSpeed(2.5f),
+		mouseSensitivity(0.1f)
+	{
+		updateCameraVectors();
+	}
 
 	glm::mat4 getViewMatrix() const
 	{
-		return glm::lookAt(
-				position,
-				position + front,
-				up);
+		return glm::lookAt(position, position + front, up);
 	}
 
-	void moveForward(float speed)
+	void processKeyboard(Camera_Movement direction, float deltaTime)
 	{
-		position += front * speed;
+		float velocity = movementSpeed * deltaTime;
+		if (direction == FORWARD)
+			position += front * velocity;
+		if (direction == BACKWARD)
+			position -= front * velocity;
+		if (direction == LEFT)
+			position -= right * velocity;
+		if (direction == RIGHT)
+			position += right * velocity;
 	}
 
-	void moveBackward(float speed)
+	void processMouseMovement(float xoffset, float yoffset, bool constrainPitch = true)
 	{
-		position -= front * speed;
+		xoffset *= mouseSensitivity;
+		yoffset *= mouseSensitivity;
+
+		yaw += xoffset;
+		pitch += yoffset;
+
+		if (constrainPitch)
+		{
+			if (pitch > 89.0f)
+				pitch = 89.0f;
+			if (pitch < -89.0f)
+				pitch = -89.0f;
+		}
+
+		updateCameraVectors();
 	}
 
-	void moveLeft(float speed)
-	{
-		position -=
-				glm::normalize(
-						glm::cross(front, up)) *
-				speed;
-	}
-
-	void moveRight(float speed)
-	{
-		position +=
-				glm::normalize(
-						glm::cross(front, up)) *
-				speed;
-	}
-
-	void updateOrientation()
+	void updateCameraVectors()
 	{
 		glm::vec3 direction;
-
-		direction.x =
-				cos(glm::radians(yaw)) *
-				cos(glm::radians(pitch));
-
-		direction.y =
-				sin(glm::radians(pitch));
-
-		direction.z =
-				sin(glm::radians(yaw)) *
-				cos(glm::radians(pitch));
-
+		direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+		direction.y = sin(glm::radians(pitch));
+		direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	
 		front = glm::normalize(direction);
-
-		glm::vec3 right =
-				glm::normalize(
-						glm::cross(
-								front,
-								glm::vec3(0.0f, 1.0f, 0.0f)));
-
-		up =
-				glm::normalize(
-						glm::cross(
-								right,
-								front));
-	}
-	void rotate(float yawOffset, float pitchOffset)
-	{
-		yaw += yawOffset;
-		pitch += pitchOffset;
-
-		if (pitch > 89.0f)
-			pitch = 89.0f;
-
-		if (pitch < -89.0f)
-			pitch = -89.0f;
-
-		updateOrientation();
-	}
-
-	void processMouseMovement(
-			float xoffset,
-			float yoffset)
-	{
-		xoffset *= sensitivity;
-		yoffset *= sensitivity;
-
-		rotate(xoffset, yoffset);
+		right = glm::normalize(glm::cross(front, worldUp));
+		up = glm::normalize(glm::cross(right, front));
 	}
 };
 
-// ---- VARIÁVEIS GLOBAIS ----
 vector<Object3D> objects = {
-		{glm::vec3(-1.0f, 0.0f, 0.0f),
-		 glm::vec3(0.5f),
-		 glm::vec3(0.0f)},
-		{glm::vec3(1.0f, 0.0f, 0.0f),
-		 glm::vec3(0.5f),
-		 glm::vec3(0.0f)}};
+	{glm::vec3(-1.0f, 0.0f, 0.0f),
+	 glm::vec3(0.5f),
+	 glm::vec3(0.0f)},
+	{glm::vec3(1.0f, 0.0f, 0.0f),
+	 glm::vec3(0.5f),
+	 glm::vec3(0.0f)}
+};
 
 int selectedObjectIndex = 0;
 int nVertices = 0;
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 const GLuint WIDTH = 1000, HEIGHT = 1000;
 const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
 const float ROTATION_STEP = 0.1f;
-const float CAMERA_SPEED = 0.01f;
 
 GLuint gShaderID = 0;
 
@@ -186,19 +180,7 @@ Light backLight = {
 		0.5f,
 		true};
 
-Camera camera = {
-		glm::vec3(0.0f, 0.0f, 4.0f),
-		glm::vec3(0.0f, 0.0f, -1.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f),
-		-90.0f,
-		0.0f,
-
-		WIDTH / 2.0f,
-		HEIGHT / 2.0f,
-
-		true,
-
-		0.1f};
+Camera camera(glm::vec3(0.0f, 0.0f, 4.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -208,7 +190,7 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 void handleRotationKeys(int key);
 void handleMovementKeys(int key);
 void handleScaleKeys(int key);
-void processCameraInput(GLFWwindow *window);
+void processCameraInput(GLFWwindow *window, float deltaTime);
 
 void prepareFrame();
 glm::mat4 buildObject3DModelMatrix(const Object3D &object);
@@ -371,7 +353,7 @@ int main()
 	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Câmera em Primeira Pessoa -- Gabriela Bado", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	camera.updateOrientation();
+	camera.updateCameraVectors();
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -430,8 +412,12 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
+		float currentFrame = static_cast<float>(glfwGetTime());
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		glfwPollEvents();
-		processCameraInput(window);
+		processCameraInput(window, deltaTime);
 
 		prepareFrame();
 
@@ -870,19 +856,19 @@ void handleScaleKeys(int key)
 	}
 }
 
-void processCameraInput(GLFWwindow *window)
+void processCameraInput(GLFWwindow *window, float deltaTime)
 {
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.moveForward(CAMERA_SPEED);
+		camera.processKeyboard(FORWARD, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.moveBackward(CAMERA_SPEED);
+		camera.processKeyboard(BACKWARD, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.moveLeft(CAMERA_SPEED);
+		camera.processKeyboard(LEFT, deltaTime);
 
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.moveRight(CAMERA_SPEED);
+		camera.processKeyboard(RIGHT, deltaTime);
 }
 
 int setupShader()
