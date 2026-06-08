@@ -11,7 +11,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 5. Módulo 4: [HelloIllumination3D](src/Desafios/M4/HelloIllumination3D.cpp) - aplicação do modelo de iluminação de Phong em objetos 3D texturizados, utilizando normais do arquivo .OBJ e propriedades de material definidas em .MTL
 6. Atividade Vivencial 02: [Vivencial02](src/Desafios/AV2/Vivencial02.cpp) - implementação de iluminação de três pontos (Key, Fill e Back Light)
 7. Módulo 05: [FirstPersonCamera](src/Desafios/M5/FirstPersonCamera.cpp) - implementação de uma câmera em primeira pessoa com movimentação via teclado
-8. Módulo 06: [loading]
+8. Módulo 06: [ObjectTrajectories](src/Desafios/M5/ObjectTrajectories.cpp) - [loading]
 
 ## 📂 Estrutura do Repositório
 
@@ -46,7 +46,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 |   |   |   ├── FirstPersonCamera.cpp
 │   │   |   └── README.md
 |   |   └── 📂 M6/
-|   |       ├── nomedoarquivo.cpp
+|   |       ├── ObjectTrajectories.cpp
 │   │       └── README.md
 │   ├── CuboIluminacao.cpp
 │   ├── SpherePhong.cpp
