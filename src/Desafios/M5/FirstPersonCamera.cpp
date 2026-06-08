@@ -150,17 +150,11 @@ struct Camera
 
 // ---- VARIÁVEIS GLOBAIS ----
 vector<Object3D> objects = {
-		{glm::vec3(-0.5f, -0.5f, 0.0f),
-		 glm::vec3(0.4f),
+		{glm::vec3(-1.0f, 0.0f, 0.0f),
+		 glm::vec3(0.5f),
 		 glm::vec3(0.0f)},
-		{glm::vec3(0.5f, -0.5f, 0.0f),
-		 glm::vec3(0.4f),
-		 glm::vec3(0.0f)},
-		{glm::vec3(-0.5f, 0.5f, 0.0f),
-		 glm::vec3(0.4f),
-		 glm::vec3(0.0f)},
-		{glm::vec3(0.5f, 0.5f, 0.0f),
-		 glm::vec3(0.4f),
+		{glm::vec3(1.0f, 0.0f, 0.0f),
+		 glm::vec3(0.5f),
 		 glm::vec3(0.0f)}};
 
 int selectedObjectIndex = 0;
@@ -170,7 +164,7 @@ const GLuint WIDTH = 1000, HEIGHT = 1000;
 const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
 const float ROTATION_STEP = 0.1f;
-const float CAMERA_SPEED = 0.1f;
+const float CAMERA_SPEED = 0.01f;
 
 GLuint gShaderID = 0;
 
@@ -193,7 +187,7 @@ Light backLight = {
 		true};
 
 Camera camera = {
-		glm::vec3(0.0f, 2.0f, 3.0f),
+		glm::vec3(0.0f, 0.0f, 4.0f),
 		glm::vec3(0.0f, 0.0f, -1.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f),
 		-90.0f,
