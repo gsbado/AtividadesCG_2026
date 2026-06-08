@@ -4,19 +4,19 @@ Este diretório contém o projeto Atividade Vivencial 02, desenvolvido para a di
 
 ## 💡 Descrição
 
-O projeto carrega o modelo 3D Suzanne a partir de um arquivo .OBJ, utilizando o loader LoadSimpleOBJ.cpp, responsável por interpretar:
+O projeto carrega o modelo 3D Suzanne a partir de um arquivo `.OBJ`, utilizando o loader `LoadSimpleOBJ.cpp`, responsável por interpretar:
 
-- vértices (v)
-- coordenadas de textura (vt)
-- vetores normais (vn)
-- índices das faces (f)
+- vértices (`v`)
+- coordenadas de textura (`vt`)
+- vetores normais (`vn`)
+- índices das faces (`f`)
 
-Além da geometria, o programa realiza a leitura do arquivo de materiais .MTL, recuperando:
+Além da geometria, o programa realiza a leitura do arquivo de materiais `.MTL`, recuperando:
 
-- coeficiente ambiente (Ka)
-- coeficiente difuso (Kd)
-- coeficiente especular (Ks)
-- textura difusa (map_Kd)
+- coeficiente ambiente (`Ka`)
+- coeficiente difuso (`Kd`)
+- coeficiente especular (`Ks`)
+- textura difusa (`map_Kd`)
 
 A iluminação da cena é calculada por meio do modelo de Phong, utilizando três fontes de luz:
 
@@ -52,16 +52,19 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ## 🎮 Controles
 
-- `TAB`: alterna entre os objetos instanciados (4 objetos: 2 cubes e 2 Suzannes).
+### Objetos
+- `TAB`: alterna entre os objetos instanciados.
 - `X` / `Y` / `Z`: incrementa rotação nos eixos X, Y ou Z do objeto selecionado.
 - `A` / `D` ou `←` / `→`: move o objeto selecionado no eixo X (esquerda/direita).
 - `W` / `S`: move o objeto selecionado no eixo Z (aproxima/afasta).
 - `I` / `J` ou `↑` / `↓`: move o objeto selecionado no eixo Y (cima/baixo).
 - `[` / `]`: diminui / aumenta a escala uniforme do objeto selecionado.
+- `ESC`: fecha o programa.
+
+### Iluminação
 - `1`: ativa/desativa a Key Light.
 - `2`: ativa/desativa a Fill Light.
 - `3`: ativa/desativa a Back Light.
-- `ESC`: fecha o programa.
 
 ## 🖥️ Preview
 
