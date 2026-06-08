@@ -23,7 +23,7 @@
 
 using namespace std;
 
-// ---- STRUCTS ----
+// ---- STRUCTS E ENUMS ----
 struct Object3D
 {
 	glm::vec3 position;
@@ -46,7 +46,8 @@ struct Light
 	bool enabled;
 };
 
-enum Camera_Movement {
+enum Camera_Movement
+{
 	FORWARD,
 	BACKWARD,
 	LEFT,
@@ -71,22 +72,22 @@ struct Camera
 	float mouseSensitivity;
 
 	Camera(
-		glm::vec3 position = glm::vec3(0.0f, 0.0f, 4.0f),
-		glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
-		float yaw = -90.0f,
-		float pitch = 0.0f)
-		: position(position),
-		front(glm::vec3(0.0f, 0.0f, -1.0f)),
-		up(glm::vec3(0.0f, 1.0f, 0.0f)),
-		right(glm::vec3(0.0f, 0.0f, 0.0f)),
-		worldUp(up),
-		yaw(yaw),
-		pitch(pitch),
-		lastX(0.0f),
-		lastY(0.0f),
-		firstMouse(true),
-		movementSpeed(2.5f),
-		mouseSensitivity(0.1f)
+			glm::vec3 position = glm::vec3(0.0f, 0.0f, 4.0f),
+			glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
+			float yaw = -90.0f,
+			float pitch = 0.0f)
+			: position(position),
+				front(glm::vec3(0.0f, 0.0f, -1.0f)),
+				up(glm::vec3(0.0f, 1.0f, 0.0f)),
+				right(glm::vec3(0.0f, 0.0f, 0.0f)),
+				worldUp(up),
+				yaw(yaw),
+				pitch(pitch),
+				lastX(0.0f),
+				lastY(0.0f),
+				firstMouse(true),
+				movementSpeed(2.5f),
+				mouseSensitivity(0.1f)
 	{
 		updateCameraVectors();
 	}
@@ -134,21 +135,20 @@ struct Camera
 		direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
 		direction.y = sin(glm::radians(pitch));
 		direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	
 		front = glm::normalize(direction);
 		right = glm::normalize(glm::cross(front, worldUp));
 		up = glm::normalize(glm::cross(right, front));
 	}
 };
 
+// ---- VARIÁVEIS GLOBAIS ----
 vector<Object3D> objects = {
-	{glm::vec3(-1.0f, 0.0f, 0.0f),
-	 glm::vec3(0.5f),
-	 glm::vec3(0.0f)},
-	{glm::vec3(1.0f, 0.0f, 0.0f),
-	 glm::vec3(0.5f),
-	 glm::vec3(0.0f)}
-};
+		{glm::vec3(-1.0f, 0.0f, 0.0f),
+		 glm::vec3(0.5f),
+		 glm::vec3(0.0f)},
+		{glm::vec3(1.0f, 0.0f, 0.0f),
+		 glm::vec3(0.5f),
+		 glm::vec3(0.0f)}};
 
 int selectedObjectIndex = 0;
 int nVertices = 0;
@@ -159,6 +159,8 @@ const GLuint WIDTH = 1000, HEIGHT = 1000;
 const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
 const float ROTATION_STEP = 0.1f;
+const float LIGHT_DISTANCE_FACTOR = 5.0f;
+const float CAMERA_FOV = 45.0f;
 
 GLuint gShaderID = 0;
 
@@ -208,7 +210,7 @@ void checkShaderCompileErrors(GLuint shader, const std::string &type);
 
 void showControlsGuide();
 
-void updateThreePointLighting();
+void updateThreePointLightPositions();
 
 void renderObject3D(
 		const Object3D &object,
@@ -386,7 +388,7 @@ int main()
 	uploadMaterialToShader(shaderID, material);
 	setUniformVec3(shaderID, "viewPosition", camera.position);
 
-	updateThreePointLighting();
+	updateThreePointLightPositions();
 	uploadLightPositions(shaderID);
 	uploadLightColors(shaderID);
 	uploadLightIntensities(shaderID);
@@ -399,7 +401,7 @@ int main()
 	glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
 	glm::mat4 projection = glm::perspective(
-			glm::radians(45.0f),
+			glm::radians(CAMERA_FOV),
 			(float)WIDTH / (float)HEIGHT,
 			0.1f,
 			100.0f);
@@ -434,7 +436,7 @@ int main()
 				"viewPosition",
 				camera.position);
 
-		updateThreePointLighting();
+		updateThreePointLightPositions();
 		uploadLightPositions(shaderID);
 
 		glActiveTexture(GL_TEXTURE0);
@@ -665,7 +667,7 @@ void checkShaderCompileErrors(GLuint shader, const std::string &type)
 	}
 }
 
-void updateThreePointLighting()
+void updateThreePointLightPositions()
 {
 	Object3D &mainObject = getSelectedObject3D();
 
@@ -677,7 +679,7 @@ void updateThreePointLighting()
 							mainObject.scale.x,
 							mainObject.scale.y),
 					mainObject.scale.z) *
-			5.0f;
+			LIGHT_DISTANCE_FACTOR;
 
 	keyLight.position =
 			center +
@@ -800,7 +802,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 	handleMovementKeys(key);
 	handleScaleKeys(key);
 
-	updateThreePointLighting();
+	updateThreePointLightPositions();
 	glUseProgram(gShaderID);
 	uploadLightPositions(gShaderID);
 	uploadLightIntensities(gShaderID);
