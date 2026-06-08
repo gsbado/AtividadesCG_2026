@@ -80,7 +80,7 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ## 🖥️ Preview
 
-[▶ Ver demonstração em vídeo](../../../assets/demos/DEMOVivencial02.mp4)
+[▶ Ver demonstração em vídeo](../../../assets/demos/DEMOFirstPersonCamera.mp4)
 
 ![FirstPersonCamera](../../../assets/demos/FirstPersonCamera.png)
 
