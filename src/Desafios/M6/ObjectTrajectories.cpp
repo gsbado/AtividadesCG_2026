@@ -3,7 +3,7 @@
  * Modificado por Gabriela Spanemberg Bado
  * para a disciplina de Computação Gráfica - Unisinos
  * Versão inicial: 7/4/2017
- * Última atualização em 07/06/2026
+ * Última atualização em 16/06/2026
  */
 
 // ---- HEADERS GLFW, GLAD, GLM ----
@@ -29,6 +29,12 @@ struct Object3D
 	glm::vec3 position;
 	glm::vec3 scale;
 	glm::vec3 rotation;
+
+	std::vector<glm::vec3> trajectoryPoints;
+
+	bool trajectoryEnabled = false;
+	int currentPoint = 0;
+	float trajectorySpeed = 1.0f;
 };
 
 struct Material
@@ -183,6 +189,7 @@ Light backLight = {
 		true};
 
 Camera camera(glm::vec3(0.0f, 0.0f, 4.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
+int currentTrajectoryPoint = 0;
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
