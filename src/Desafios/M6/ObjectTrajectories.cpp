@@ -200,6 +200,7 @@ void handleRotationKeys(int key);
 void handleMovementKeys(int key);
 void handleScaleKeys(int key);
 void processCameraInput(GLFWwindow *window, float deltaTime);
+void addTrajectoryPoint();
 
 void prepareFrame();
 glm::mat4 buildObject3DModelMatrix(const Object3D &object);
@@ -805,6 +806,11 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 		cout << "Back Light: " << (backLight.enabled ? "ON" : "OFF") << endl;
 	}
 
+	if (key == GLFW_KEY_P)
+	{
+		addTrajectoryPoint();
+	}
+
 	handleRotationKeys(key);
 	handleMovementKeys(key);
 	handleScaleKeys(key);
@@ -880,6 +886,20 @@ void processCameraInput(GLFWwindow *window, float deltaTime)
 		camera.processKeyboard(RIGHT, deltaTime);
 }
 
+void addTrajectoryPoint()
+{
+	Object3D &object = getSelectedObject3D();
+
+	object.trajectoryPoints.push_back(
+			object.position);
+
+	cout << "Ponto adicionado: ("
+			 << object.position.x << ", "
+			 << object.position.y << ", "
+			 << object.position.z << ")"
+			 << endl;
+}
+
 int setupShader()
 {
 	GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
@@ -923,6 +943,7 @@ void showControlsGuide()
 	cout << " Movimento Objeto Y :  /\\ | \\/" << endl;
 	cout << " Rotacao            : X | Y | Z" << endl;
 	cout << " Escala             : [ | ]" << endl;
+	cout << " Adicionar ponto    : P" << endl;
 	cout << " Key Light          : 1" << endl;
 	cout << " Fill Light         : 2" << endl;
 	cout << " Back Light         : 3" << endl;
