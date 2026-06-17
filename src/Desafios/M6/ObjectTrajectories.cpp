@@ -201,10 +201,13 @@ void handleMovementKeys(int key);
 void handleScaleKeys(int key);
 void processCameraInput(GLFWwindow *window, float deltaTime);
 void addTrajectoryPoint();
+void loadTrajectory(Object3D &object, const string &filename);
 
 void prepareFrame();
 glm::mat4 buildObject3DModelMatrix(const Object3D &object);
 Object3D &getSelectedObject3D();
+
+void updateTrajectory(Object3D& object, float deltaTime);
 
 glm::vec3 parseVec3(std::istringstream &ss);
 void setUniformVec3(GLuint shaderID, const char *name, const glm::vec3 &value);
@@ -390,6 +393,7 @@ int main()
 	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
 	GLuint textureID = loadTexture("../assets/Modelos3D/Suzanne/" + textureName);
 	Material material = loadMaterialFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
+	loadTrajectory(objects[0], "../assets/Trajectories/objectTrajectory.txt");
 
 	glUseProgram(shaderID);
 
@@ -945,6 +949,21 @@ void updateTrajectory(
 
 	object.position +=
 			glm::normalize(direction) * object.trajectorySpeed * deltaTime;
+}
+
+void loadTrajectory(
+		Object3D &object,
+		const string &filename)
+{
+	ifstream file(filename);
+
+	float x, y, z;
+
+	while (file >> x >> y >> z)
+	{
+		object.trajectoryPoints.push_back(
+				glm::vec3(x, y, z));
+	}
 }
 
 int setupShader()
