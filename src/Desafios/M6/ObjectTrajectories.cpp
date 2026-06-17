@@ -189,7 +189,6 @@ Light backLight = {
 		true};
 
 Camera camera(glm::vec3(0.0f, 0.0f, 4.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f);
-int currentTrajectoryPoint = 0;
 
 // ---- DECLARAÇÃO DE FUNÇÕES ----
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode);
@@ -200,14 +199,13 @@ void handleRotationKeys(int key);
 void handleMovementKeys(int key);
 void handleScaleKeys(int key);
 void processCameraInput(GLFWwindow *window, float deltaTime);
-void addTrajectoryPoint();
 void loadTrajectory(Object3D &object, const string &filename);
 
 void prepareFrame();
 glm::mat4 buildObject3DModelMatrix(const Object3D &object);
 Object3D &getSelectedObject3D();
 
-void updateTrajectory(Object3D& object, float deltaTime);
+void updateTrajectory(Object3D &object, float deltaTime);
 
 glm::vec3 parseVec3(std::istringstream &ss);
 void setUniformVec3(GLuint shaderID, const char *name, const glm::vec3 &value);
@@ -393,7 +391,10 @@ int main()
 	string textureName = loadTexturePathFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
 	GLuint textureID = loadTexture("../assets/Modelos3D/Suzanne/" + textureName);
 	Material material = loadMaterialFromMTL("../assets/Modelos3D/Suzanne/Suzanne.mtl");
-	loadTrajectory(objects[0], "../assets/Trajectories/objectTrajectory.txt");
+	loadTrajectory(objects[0], "../assets/objectTrajectory1.txt");
+	loadTrajectory(objects[1], "../assets/objectTrajectory2.txt");
+	objects[0].trajectorySpeed = 1.0f;
+	objects[1].trajectorySpeed = 1.5f;
 
 	glUseProgram(shaderID);
 
@@ -817,11 +818,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 		cout << "Back Light: " << (backLight.enabled ? "ON" : "OFF") << endl;
 	}
 
-	if (key == GLFW_KEY_P)
-	{
-		addTrajectoryPoint();
-	}
-
 	if (key == GLFW_KEY_T)
 	{
 		Object3D &object =
@@ -829,6 +825,10 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 		object.trajectoryEnabled =
 				!object.trajectoryEnabled;
+
+		cout << "Trajetoria "
+				 << (object.trajectoryEnabled ? "ON" : "OFF")
+				 << endl;
 	}
 
 	handleRotationKeys(key);
@@ -906,20 +906,6 @@ void processCameraInput(GLFWwindow *window, float deltaTime)
 		camera.processKeyboard(RIGHT, deltaTime);
 }
 
-void addTrajectoryPoint()
-{
-	Object3D &object = getSelectedObject3D();
-
-	object.trajectoryPoints.push_back(
-			object.position);
-
-	cout << "Ponto adicionado: ("
-			 << object.position.x << ", "
-			 << object.position.y << ", "
-			 << object.position.z << ")"
-			 << endl;
-}
-
 void updateTrajectory(
 		Object3D &object,
 		float deltaTime)
@@ -957,6 +943,14 @@ void loadTrajectory(
 {
 	ifstream file(filename);
 
+	if (!file.is_open())
+	{
+		cout << "Erro ao abrir arquivo: "
+				 << filename
+				 << endl;
+		return;
+	}
+
 	float x, y, z;
 
 	while (file >> x >> y >> z)
@@ -964,6 +958,11 @@ void loadTrajectory(
 		object.trajectoryPoints.push_back(
 				glm::vec3(x, y, z));
 	}
+
+	cout << object.trajectoryPoints.size()
+			 << " pontos carregados de "
+			 << filename
+			 << endl;
 }
 
 int setupShader()
@@ -1009,7 +1008,6 @@ void showControlsGuide()
 	cout << " Movimento Objeto Y :  /\\ | \\/" << endl;
 	cout << " Rotacao            : X | Y | Z" << endl;
 	cout << " Escala             : [ | ]" << endl;
-	cout << " Adicionar ponto    : P" << endl;
 	cout << " Iniciar trajeto    : T" << endl;
 	cout << " Key Light          : 1" << endl;
 	cout << " Fill Light         : 2" << endl;
