@@ -431,6 +431,13 @@ int main()
 
 		prepareFrame();
 
+		for (Object3D &object : objects)
+		{
+			updateTrajectory(
+					object,
+					deltaTime);
+		}
+
 		view = camera.getViewMatrix();
 
 		glUniformMatrix4fv(
@@ -811,6 +818,15 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 		addTrajectoryPoint();
 	}
 
+	if (key == GLFW_KEY_T)
+	{
+		Object3D &object =
+				getSelectedObject3D();
+
+		object.trajectoryEnabled =
+				!object.trajectoryEnabled;
+	}
+
 	handleRotationKeys(key);
 	handleMovementKeys(key);
 	handleScaleKeys(key);
@@ -900,6 +916,37 @@ void addTrajectoryPoint()
 			 << endl;
 }
 
+void updateTrajectory(
+		Object3D &object,
+		float deltaTime)
+{
+	if (!object.trajectoryEnabled)
+		return;
+
+	if (object.trajectoryPoints.size() < 2)
+		return;
+
+	glm::vec3 target =
+			object.trajectoryPoints[object.currentPoint];
+
+	glm::vec3 direction =
+			target - object.position;
+
+	float distance =
+			glm::length(direction);
+
+	if (distance < 0.05f)
+	{
+		object.currentPoint =
+				(object.currentPoint + 1) % object.trajectoryPoints.size();
+
+		return;
+	}
+
+	object.position +=
+			glm::normalize(direction) * object.trajectorySpeed * deltaTime;
+}
+
 int setupShader()
 {
 	GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
@@ -944,6 +991,7 @@ void showControlsGuide()
 	cout << " Rotacao            : X | Y | Z" << endl;
 	cout << " Escala             : [ | ]" << endl;
 	cout << " Adicionar ponto    : P" << endl;
+	cout << " Iniciar trajeto    : T" << endl;
 	cout << " Key Light          : 1" << endl;
 	cout << " Fill Light         : 2" << endl;
 	cout << " Back Light         : 3" << endl;
