@@ -88,7 +88,7 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ![ObjectTrajectories](../../../assets/demos/ObjectTrajectories.png)
 
-> Exemplo de navegação em primeira pessoa
+> Exemplo de objetos percorrendo trajetórias independentes na cena
 
 ## 📌 Observações Finais
 
