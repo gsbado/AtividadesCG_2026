@@ -367,7 +367,7 @@ int main()
 {
 	glfwInit();
 
-	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Câmera em Primeira Pessoa -- Gabriela Bado", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Trajetórias de Objetos -- Gabriela Bado", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	glfwSetKeyCallback(window, key_callback);
@@ -599,7 +599,6 @@ GLuint loadTexture(
 	GLenum format = (channels == 4)
 											? GL_RGBA
 											: GL_RGB;
-
 	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(data);
@@ -786,21 +785,13 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 	}
 }
 
-void key_callback(
-		GLFWwindow *window,
-		int key,
-		int scancode,
-		int action,
-		int mode)
+void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
-	if (action != GLFW_PRESS &&
-			action != GLFW_REPEAT)
+	if (action != GLFW_PRESS && action != GLFW_REPEAT)
 		return;
 
 	if (key == GLFW_KEY_ESCAPE)
-		glfwSetWindowShouldClose(
-				window,
-				GL_TRUE);
+		glfwSetWindowShouldClose(window, GL_TRUE);
 
 	handleObjectSelection(key);
 	handleLightToggle(key);
@@ -873,8 +864,7 @@ void handleObjectSelection(int key)
 	if (key != GLFW_KEY_TAB)
 		return;
 
-	selectedObjectIndex =
-			(selectedObjectIndex + 1) % objects.size();
+	selectedObjectIndex = (selectedObjectIndex + 1) % objects.size();
 
 	cout << "Object3D selected: "
 			 << selectedObjectIndex + 1
@@ -918,8 +908,7 @@ void handleTrajectoryToggle(int key)
 
 	Object3D &object = getSelectedObject3D();
 
-	object.trajectoryEnabled =
-			!object.trajectoryEnabled;
+	object.trajectoryEnabled = !object.trajectoryEnabled;
 
 	cout << "Trajetoria "
 			 << (object.trajectoryEnabled ? "ON" : "OFF")
@@ -941,9 +930,7 @@ void processCameraInput(GLFWwindow *window, float deltaTime)
 		camera.processKeyboard(RIGHT, deltaTime);
 }
 
-void updateTrajectory(
-		Object3D &object,
-		float deltaTime)
+void updateTrajectory(Object3D &object, float deltaTime)
 {
 	if (!object.trajectoryEnabled)
 		return;
@@ -951,20 +938,16 @@ void updateTrajectory(
 	if (object.trajectoryPoints.size() < 2)
 		return;
 
-	glm::vec3 target =
-			object.trajectoryPoints[object.currentPoint];
+	glm::vec3 target = object.trajectoryPoints[object.currentPoint];
 
-	glm::vec3 direction =
-			target - object.position;
+	glm::vec3 direction = target - object.position;
 
-	float distance =
-			glm::length(direction);
+	float distance = glm::length(direction);
 
 	if (distance < TRAJECTORY_POINT_THRESHOLD)
 	{
 		object.currentPoint =
 				(object.currentPoint + 1) % object.trajectoryPoints.size();
-
 		return;
 	}
 
@@ -972,9 +955,7 @@ void updateTrajectory(
 			glm::normalize(direction) * object.trajectorySpeed * deltaTime;
 }
 
-void loadTrajectory(
-		Object3D &object,
-		const string &filename)
+void loadTrajectory(Object3D &object, const string &filename)
 {
 	ifstream file(filename);
 
@@ -990,8 +971,7 @@ void loadTrajectory(
 
 	while (file >> x >> y >> z)
 	{
-		object.trajectoryPoints.push_back(
-				glm::vec3(x, y, z));
+		object.trajectoryPoints.push_back(glm::vec3(x, y, z));
 	}
 
 	cout << object.trajectoryPoints.size()
@@ -1032,7 +1012,7 @@ void showControlsGuide()
 	cout << endl;
 	cout << "==========================================" << endl;
 	cout << " Bem-vindo a Object Trajectories! " << endl;
-	cout << " Controle seu objeto utilizando as seguintes teclas:" << endl;
+	cout << " Controle seu objeto ou câmera utilizando as seguintes teclas:" << endl;
 	cout << "------------------------------------------" << endl;
 	cout << " Selecionar         : TAB (troca objeto ativo)" << endl;
 	cout << " Capturar Mouse     : Clique Esquerdo" << endl;
