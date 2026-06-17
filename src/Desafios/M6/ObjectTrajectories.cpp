@@ -167,6 +167,9 @@ const float SCALE_STEP = 0.1f;
 const float ROTATION_STEP = 0.1f;
 const float LIGHT_DISTANCE_FACTOR = 5.0f;
 const float CAMERA_FOV = 45.0f;
+const float MIN_SCALE = 0.2f;
+const float MAX_SCALE = 1.2f;
+const float TRAJECTORY_POINT_THRESHOLD = 0.05f;
 
 GLuint gShaderID = 0;
 
@@ -198,6 +201,9 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 void handleRotationKeys(int key);
 void handleMovementKeys(int key);
 void handleScaleKeys(int key);
+void handleObjectSelection(int key);
+void handleLightToggle(int key);
+void handleTrajectoryToggle(int key);
 void processCameraInput(GLFWwindow *window, float deltaTime);
 void loadTrajectory(Object3D &object, const string &filename);
 
@@ -364,7 +370,6 @@ int main()
 	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Câmera em Primeira Pessoa -- Gabriela Bado", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	camera.updateCameraVectors();
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -475,6 +480,7 @@ int main()
 	glDeleteTextures(1, &textureID);
 	glDeleteVertexArrays(1, &VAO);
 
+	glDeleteProgram(shaderID);
 	glfwTerminate();
 	return 0;
 }
@@ -780,63 +786,34 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 	}
 }
 
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mode)
+void key_callback(
+		GLFWwindow *window,
+		int key,
+		int scancode,
+		int action,
+		int mode)
 {
-	if (action != GLFW_PRESS && action != GLFW_REPEAT)
+	if (action != GLFW_PRESS &&
+			action != GLFW_REPEAT)
 		return;
 
 	if (key == GLFW_KEY_ESCAPE)
-		glfwSetWindowShouldClose(window, GL_TRUE);
+		glfwSetWindowShouldClose(
+				window,
+				GL_TRUE);
 
-	if (key == GLFW_KEY_TAB)
-	{
-		selectedObjectIndex =
-				(selectedObjectIndex + 1) % objects.size();
-
-		cout << "Object3D selected: "
-				 << selectedObjectIndex + 1
-				 << endl;
-
-		return;
-	}
-
-	if (key == GLFW_KEY_1)
-	{
-		keyLight.enabled = !keyLight.enabled;
-		cout << "Key Light: " << (keyLight.enabled ? "ON" : "OFF") << endl;
-	}
-
-	if (key == GLFW_KEY_2)
-	{
-		fillLight.enabled = !fillLight.enabled;
-		cout << "Fill Light: " << (fillLight.enabled ? "ON" : "OFF") << endl;
-	}
-
-	if (key == GLFW_KEY_3)
-	{
-		backLight.enabled = !backLight.enabled;
-		cout << "Back Light: " << (backLight.enabled ? "ON" : "OFF") << endl;
-	}
-
-	if (key == GLFW_KEY_T)
-	{
-		Object3D &object =
-				getSelectedObject3D();
-
-		object.trajectoryEnabled =
-				!object.trajectoryEnabled;
-
-		cout << "Trajetoria "
-				 << (object.trajectoryEnabled ? "ON" : "OFF")
-				 << endl;
-	}
+	handleObjectSelection(key);
+	handleLightToggle(key);
+	handleTrajectoryToggle(key);
 
 	handleRotationKeys(key);
 	handleMovementKeys(key);
 	handleScaleKeys(key);
 
 	updateThreePointLightPositions();
+
 	glUseProgram(gShaderID);
+
 	uploadLightPositions(gShaderID);
 	uploadLightIntensities(gShaderID);
 }
@@ -878,17 +855,75 @@ void handleScaleKeys(int key)
 
 	if (key == GLFW_KEY_LEFT_BRACKET)
 	{
-		object.scale.x = glm::max(object.scale.x - SCALE_STEP, 0.2f);
-		object.scale.y = glm::max(object.scale.y - SCALE_STEP, 0.2f);
-		object.scale.z = glm::max(object.scale.z - SCALE_STEP, 0.2f);
+		object.scale.x = glm::max(object.scale.x - SCALE_STEP, MIN_SCALE);
+		object.scale.y = glm::max(object.scale.y - SCALE_STEP, MIN_SCALE);
+		object.scale.z = glm::max(object.scale.z - SCALE_STEP, MIN_SCALE);
 	}
 
 	if (key == GLFW_KEY_RIGHT_BRACKET)
 	{
-		object.scale.x = glm::min(object.scale.x + SCALE_STEP, 1.2f);
-		object.scale.y = glm::min(object.scale.y + SCALE_STEP, 1.2f);
-		object.scale.z = glm::min(object.scale.z + SCALE_STEP, 1.2f);
+		object.scale.x = glm::min(object.scale.x + SCALE_STEP, MAX_SCALE);
+		object.scale.y = glm::min(object.scale.y + SCALE_STEP, MAX_SCALE);
+		object.scale.z = glm::min(object.scale.z + SCALE_STEP, MAX_SCALE);
 	}
+}
+
+void handleObjectSelection(int key)
+{
+	if (key != GLFW_KEY_TAB)
+		return;
+
+	selectedObjectIndex =
+			(selectedObjectIndex + 1) % objects.size();
+
+	cout << "Object3D selected: "
+			 << selectedObjectIndex + 1
+			 << endl;
+}
+
+void handleLightToggle(int key)
+{
+	if (key == GLFW_KEY_1)
+	{
+		keyLight.enabled = !keyLight.enabled;
+
+		cout << "Key Light: "
+				 << (keyLight.enabled ? "ON" : "OFF")
+				 << endl;
+	}
+
+	if (key == GLFW_KEY_2)
+	{
+		fillLight.enabled = !fillLight.enabled;
+
+		cout << "Fill Light: "
+				 << (fillLight.enabled ? "ON" : "OFF")
+				 << endl;
+	}
+
+	if (key == GLFW_KEY_3)
+	{
+		backLight.enabled = !backLight.enabled;
+
+		cout << "Back Light: "
+				 << (backLight.enabled ? "ON" : "OFF")
+				 << endl;
+	}
+}
+
+void handleTrajectoryToggle(int key)
+{
+	if (key != GLFW_KEY_T)
+		return;
+
+	Object3D &object = getSelectedObject3D();
+
+	object.trajectoryEnabled =
+			!object.trajectoryEnabled;
+
+	cout << "Trajetoria "
+			 << (object.trajectoryEnabled ? "ON" : "OFF")
+			 << endl;
 }
 
 void processCameraInput(GLFWwindow *window, float deltaTime)
@@ -925,7 +960,7 @@ void updateTrajectory(
 	float distance =
 			glm::length(direction);
 
-	if (distance < 0.05f)
+	if (distance < TRAJECTORY_POINT_THRESHOLD)
 	{
 		object.currentPoint =
 				(object.currentPoint + 1) % object.trajectoryPoints.size();
