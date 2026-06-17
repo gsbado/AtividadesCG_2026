@@ -84,9 +84,9 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ## 🖥️ Preview
 
-[▶ Ver demonstração em vídeo](../../../assets/demos/DEMOFirstPersonCamera.mp4)
+[▶ Ver demonstração em vídeo](../../../assets/demos/DEMOObjectTrajectories.mp4)
 
-![ObjectTrajectories](../../../assets/demos/FirstPersonCamera.png)
+![ObjectTrajectories](../../../assets/demos/ObjectTrajectories.png)
 
 > Exemplo de navegação em primeira pessoa
 
