@@ -1,7 +1,5 @@
 # First Person Camera
 
-Este diretório contém o projeto Atividade Vivencial 02, desenvolvido para a disciplina de Computação Gráfica da Unisinos. O projeto demonstra a aplicação de iluminação tridimensional utilizando o modelo de Phong combinado com a técnica de iluminação de três pontos (Three-Point Lighting), aplicada a modelos 3D carregados a partir de arquivos `.OBJ`, com materiais definidos em arquivos `.MTL` e texturização.
-
 Este diretório contém o projeto First Person Camera, desenvolvido para a disciplina de Computação Gráfica da Unisinos. O projeto demonstra a implementação de uma câmera em primeira pessoa utilizando OpenGL, combinada com carregamento de modelos 3D, texturização, materiais definidos em arquivos `.MTL` e iluminação baseada no modelo de Phong com a técnica de Three-Point Lighting.
 
 ## 💡 Descrição
