@@ -1,6 +1,6 @@
-# Object Trajectories
+# Final Demo - Computação Gráfica
 
-Este diretório contém o projeto Final Demo
+Este diretório contém o projeto Final Demo, desenvolvido para a disciplina de Computação Gráfica da Unisinos. A aplicação demonstra a renderização de uma cena 3D interativa em OpenGL, combinando movimentação de câmera em primeira pessoa, carregamento dinâmico de modelos `.OBJ` e materiais `.MTL`, aplicação de texturas e um sistema de iluminação baseado no modelo de Phong com a técnica de *Three-Point Lighting*. Além disso, o projeto conta com a implementação de trajetórias cíclicas e independentes para múltiplos objetos na cena.
 
 ## 💡 Descrição
 
@@ -36,23 +36,39 @@ As luzes são posicionadas dinamicamente em torno do objeto selecionado, permiti
   - implementação principal da aplicação, incluindo inicialização de GLFW/GLAD, carregamento de modelos, texturas, materiais, câmera em primeira pessoa e sistema de iluminação.
 - `Code snippets/LoadSimpleOBJ.cpp`
   - contém a função `loadSimpleOBJ(...)` que converte o arquivo `.OBJ` em um VAO para OpenGL.
-- `assets/Modelos3D/Suzanne.obj`
-  - modelo 3D utilizado na cena.
+- `assets/Modelos3D/Suzanne/Suzanne.obj`
+  - primeiro modelo 3D utilizado na cena.
 - `assets/Modelos3D/Suzanne/Suzanne.mtl`
-  - arquivo de materiais associado ao modelo.
+  - arquivo de materiais associado ao modelo da Suzanne.
+- `assets/Modelos3D/Cube.obj`
+  - segundo modelo 3D utilizado na cena.
+- `assets/Modelos3D/Cube.mtl`
+  - arquivo de materiais associado ao modelo do Cube.
 - `assets/objectTrajectory1.txt`
   - pontos de controle da trajetória do primeiro objeto.
 - `assets/objectTrajectory2.txt`
   - pontos de controle da trajetória do segundo objeto.
 
+## 📦 Assets
+- **Suzanne (.obj/.mtl):** Modelo geométrico clássico (macaca mascote do software **Blender**). Disponibilizado pelo professor da disciplina como parte da base do projeto educacional.
+- **Cube (.obj/.mtl):** Primitiva 3D básica gerada e exportada em formato `.OBJ` para testes de renderização.
+- **Texturas:** Obtidas de repositórios online de texturas gratuitas para fins de estudo de Computação Gráfica. O mapeamento UV foi importado diretamente junto aos arquivos `.mtl`
+
 ## ⚙️ Como Executar
 
+### 🛠️ Dependências Utilizadas
+- **GLFW** (Gerenciamento de janelas e inputs)
+- **GLAD** (Carregamento das funções do OpenGL)
+- **GLM** (Biblioteca matemática para transformações 3D)
+- **stb_image** (Carregamento das texturas)
+
+### 🚀 Passos para Execução
 Para compilar e rodar este projeto, certifique-se de ter um compilador C++ e as bibliotecas necessárias instaladas (GLFW, GLAD, GLM). Você pode usar o Visual Studio Code, CLion, ou outro editor/IDE de sua preferência.
 
 1. Abra o terminal e entre na pasta `build` do projeto: `cd build`
 2. Gere os arquivos de build com o CMake (ou configure seu projeto na IDE).
 3. Compile o projeto (pode utilizar `cmake --build .` no terminal).
-4. Execute o programa gerado (`./ObjectTrajectories`).
+4. Execute o programa gerado (`./FinalDemo`).
 
 Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sistema, se necessário.
 
@@ -83,7 +99,15 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ## 🖥️ Preview
 
->Exemplo
+> Exemplo de objetos percorrendo trajetórias independentes na cena
+
+## 📚 Referências
+
+- **Learn OpenGL:** Guia principal utilizado para os conceitos de câmera, texturização e iluminação (Modelo de Phong). Disponível em: [learnopengl.com](https://learnopengl.com/)
+- **Documentação GLFW:** Consultada para gerenciamento de callbacks de teclado e mouse. Disponível em: [glfw.org](https://www.glfw.org/docs/latest/)
+- **Documentação GLM:** Consultada para funções de matrizes de projeção, visualização (`lookAt`) e rotações. Disponível em: [glm.g-truc.net](https://glm.g-truc.net/)
+- **Materiais da Disciplina:** Notas de aula e snippets de código fornecidos ao longo do semestre na disciplina de Computação Gráfica - Unisinos.
+
 
 ## 📌 Observações Finais
 
