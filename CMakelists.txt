@@ -55,6 +55,7 @@ set(EXERCISES
     Vivencial02
     FirstPersonCamera
     ObjectTrajectories
+    FinalDemo
 )
 
 add_compile_options(-Wno-pragmas)
@@ -96,6 +97,8 @@ foreach(EXERCISE ${EXERCISES})
         add_executable(${EXERCISE} src/Desafios/M5/${EXERCISE}.cpp "Code snippets/LoadSimpleOBJ.cpp" ${GLAD_C_FILE})
     elseif(${EXERCISE} STREQUAL "ObjectTrajectories")
         add_executable(${EXERCISE} src/Desafios/M6/${EXERCISE}.cpp "Code snippets/LoadSimpleOBJ.cpp" ${GLAD_C_FILE})
+    elseif(${EXERCISE} STREQUAL "FinalDemo")
+        add_executable(${EXERCISE} src/Desafios/GB/${EXERCISE}.cpp "Code snippets/LoadSimpleOBJ.cpp" ${GLAD_C_FILE})
     else()
         add_executable(${EXERCISE} src/${EXERCISE}.cpp ${GLAD_C_FILE})
     endif()
