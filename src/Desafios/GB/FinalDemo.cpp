@@ -162,7 +162,7 @@ float lastFrame = 0.0f;
 int suzanneVertices = 0;
 int cubeVertices = 0;
 
-const GLuint WIDTH = 1000, HEIGHT = 1000;
+const GLuint WIDTH = 1400, HEIGHT = 1000;
 const float MOVEMENT_STEP = 0.1f;
 const float SCALE_STEP = 0.1f;
 const float ROTATION_STEP = 0.1f;
