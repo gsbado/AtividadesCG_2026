@@ -99,7 +99,9 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ## 🖥️ Preview
 
-> Exemplo de objetos percorrendo trajetórias independentes na cena
+![ObjectTrajectories](../../../assets/demos/FinalDemo.png)
+
+> Exemplo de posicionamento na cena final
 
 ## 📚 Referências
 

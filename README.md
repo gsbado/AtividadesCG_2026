@@ -12,7 +12,7 @@ Este repositório foi criado para a entrega das atividades da disciplina de **Co
 6. Atividade Vivencial 02: [Vivencial02](src/Desafios/AV2/Vivencial02.cpp) - implementação de iluminação de três pontos (Key, Fill e Back Light)
 7. Módulo 05: [FirstPersonCamera](src/Desafios/M5/FirstPersonCamera.cpp) - implementação de uma câmera em primeira pessoa com movimentação via teclado
 8. Módulo 06: [ObjectTrajectories](src/Desafios/M6/ObjectTrajectories.cpp) -  implementação de trajetórias cíclicas para múltiplos objetos 3D utilizando pontos de controle carregados de arquivos externos
-9. Grau B: [FinalDemo](src/Desafios/M6/FinalDemo.cpp) 
+9. Grau B: [FinalDemo](src/Desafios/M6/FinalDemo.cpp) - projeto final unificando todas as técnicas do semestre em uma cena 3D
 
 ## 📂 Estrutura do Repositório
 
