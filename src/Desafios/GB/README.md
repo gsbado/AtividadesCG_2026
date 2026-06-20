@@ -99,7 +99,9 @@ Certifique-se de que as DLLs das bibliotecas estejam acessíveis no PATH do sist
 
 ## 🖥️ Preview
 
-![ObjectTrajectories](../../../assets/demos/FinalDemo.png)
+[▶ Ver demonstração em vídeo](../../../assets/demos/DEMOFinalDemo.mp4)
+
+![FinalDemo](../../../assets/demos/FinalDemo.png)
 
 > Exemplo de posicionamento na cena final
 
